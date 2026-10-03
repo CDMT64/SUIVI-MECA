@@ -1,6 +1,6 @@
 {
-  "name": "Cougar — Suivi Entretiens",
-  "short_name": "Cougar",
+  "name": "Suivi Méca",
+  "short_name": "Suivi Méca",
   "description": "Suivi des échéances mécaniques et calendaires",
   "start_url": "./index.html",
   "scope": "./",
