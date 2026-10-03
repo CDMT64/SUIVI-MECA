@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cougar — Suivi Entretiens</title>
+<meta name="theme-color" content="#0F2248">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cougar">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="shortcut icon" href="icon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-deep:   #0B1A35;
+    --blue-dark:   #0F2248;
+    --blue-mid:    #163272;
+    --blue-bright: #2563EB;
+    --blue-light:  #3B82F6;
+    --blue-pale:   #DBEAFE;
+    --gold:        #F0C040;
+    --gold-dim:    #A07A10;
+    --green:       #34D399;
+    --green-dark:  #065F46;
+    --orange:      #F97316;
+    --red:         #EF4444;
+    --text:        #E8EEF8;
+    --text-mid:    #94A3B8;
+    --text-dim:    #4A6080;
+    --border:      #1E3A6E;
+    --card:        #0D1F45;
+    --card2:       #112354;
+    --input-bg:    #091530;
+  }
+
+  body {
+    background: var(--blue-deep);
+    color: #E8EEF8;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--blue-dark);
+    border-bottom: 2px solid var(--blue-mid);
+    padding: 14px 16px 12px;
+    position: sticky; top: 0; z-index: 10;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 264px;
+    height: 140px;
+    background-image: url('data:image/jpeg;base64,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');
+    background-size: cover;
+    background-position: 55% center;
+    opacity: 0.35;
+    filter: grayscale(100%) invert(0) contrast(1.2);
+    pointer-events: none;
+  }
+
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--gold); letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative; z-index: 1;
+  }
+  .header-sub {
+    font-size: 12px; font-weight: 500;
+    color: var(--text-mid); margin-top: 2px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    position: relative; z-index: 1;
+  }
+  .version-badge {
+    position: absolute; top: 8px; right: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px; font-weight: 700;
+    color: var(--gold-dim); letter-spacing: 0.1em;
+    opacity: 0.6; z-index: 2;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--blue-dark);
+    border-bottom: 1px solid #1E3A6E;
+  }
+  .tab {
+    flex: 1; padding: 12px 8px;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #4A6080;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+    background: rgba(240,192,64,0.06);
+  }
+
+  /* ── CONTENT ── */
+  .content { padding: 14px; max-width: 700px; margin: 0 auto; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+
+  /* ── SECTION ── */
+  .section {
+    background: var(--card);
+    border: 1px solid #1E3A6E;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .section.accent { border-color: var(--blue-light); }
+  .section-header {
+    background: var(--card2);
+    padding: 9px 16px;
+    border-bottom: 1px solid #1E3A6E;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section.accent .section-header {
+    background: var(--blue-mid);
+    border-color: var(--blue-light);
+  }
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-mid); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .section.accent .section-title { color: var(--blue-pale); }
+  .section-body { padding: 14px 16px; }
+
+  /* ── SECTION LABEL (small) ── */
+  .section-label {
+    font-size: 11px; font-weight: 700;
+    color: #4A6080; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+
+  /* ── COUGAR ROW ── */
+  .cougar-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 0;
+  }
+  .cougar-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.08em; color: var(--gold);
+    white-space: nowrap;
+  }
+  .cougar-select {
+    flex: 1;
+    background: var(--input-bg);
+    border: 1px solid #1E3A6E;
+    border-radius: 8px;
+    color: #E8EEF8;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px; font-weight: 700;
+    padding: 9px 12px;
+    outline: none; cursor: pointer;
+    color: var(--gold);
+  }
+  .cougar-select:focus { border-color: var(--blue-light); }
+
+  /* ── BTN ADD COUGAR ── */
+  .btn-add-cougar {
+    background: var(--input-bg);
+    border: 1px solid #1E3A6E;
+    border-radius: 8px;
+    color: var(--text-mid);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px; font-weight: 600;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-add-cougar:hover { border-color: var(--blue-light); color: var(--blue-pale); }
+
+  /* ── H CELLULE ── */
+  .hcell-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid #1E3A6E;
+  }
+  .hcell-label {
+    font-size: 14px; font-weight: 600;
+    color: #E8EEF8; flex: 1;
+  }
+  .input-field {
+    background: var(--input-bg);
+    border: 1px solid #1E3A6E;
+    border-radius: 8px;
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px; font-weight: 700;
+    padding: 9px 12px;
+    outline: none; width: 130px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--blue-light); }
+  .hcell-unit {
+    font-size: 11px; font-weight: 500;
+    color: var(--text-mid);
+  }
+
+  /* ── BTN ADD ENTRETIEN ── */
+  .btn-add {
+    background: var(--input-bg);
+    border: 1.5px solid var(--blue-light);
+    border-radius: 8px;
+    color: var(--blue-pale);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 7px 14px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .btn-add:hover { background: var(--blue-mid); }
+  .btn-add-cal {
+    background: var(--input-bg);
+    border: 1.5px solid #8B5CF6;
+    border-radius: 8px;
+    color: #C4B5FD;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 7px 14px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .btn-add-cal:hover { background: rgba(139,92,246,0.15); }
+
+  /* badge type */
+  .type-badge-meca { background: rgba(59,130,246,0.15); color: #6FA8E8; border: 1px solid rgba(59,130,246,0.4); border-radius:4px; font-size:10px; font-weight:700; padding:2px 7px; letter-spacing:0.06em; white-space:nowrap; }
+  .type-badge-cal  { background: rgba(139,92,246,0.15); color: #C4B5FD; border: 1px solid rgba(139,92,246,0.4); border-radius:4px; font-size:10px; font-weight:700; padding:2px 7px; letter-spacing:0.06em; white-space:nowrap; }
+
+  /* input date */
+  input[type="date"].input-num {
+    color-scheme: dark;
+    font-size: 14px;
+  }
+
+  /* ── ENTRETIEN CARD ── */
+  .entretien-card {
+    background: var(--card);
+    border: 1px solid #1E3A6E;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: border-color 0.2s;
+  }
+  .entretien-card:hover { border-color: var(--blue-mid); }
+
+  .entretien-top {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #1E3A6E;
+    background: var(--card2);
+  }
+  .entretien-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    background: rgba(240,192,64,0.12);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .input-name {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #1E3A6E;
+    color: #E8EEF8;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 4px 6px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-name:focus { border-bottom-color: var(--gold); }
+  .input-name::placeholder { color: #4A6080; font-weight: 400; }
+
+  .btn-del {
+    background: none; border: none;
+    color: #4A6080;
+    font-size: 18px; cursor: pointer;
+    padding: 4px; line-height: 1;
+    transition: color 0.2s; flex-shrink: 0;
+  }
+  .btn-del:hover { color: var(--red); }
+
+  .entretien-body {
+    padding: 12px 14px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .field-group {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .field-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #4A6080;
+  }
+  .field-row {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .input-num {
+    background: var(--input-bg);
+    border: 1px solid #1E3A6E;
+    border-radius: 8px;
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px; font-weight: 700;
+    padding: 8px 10px;
+    outline: none; width: 100%;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .input-num:focus { border-color: var(--blue-light); }
+  .field-unit {
+    font-size: 10px; font-weight: 500;
+    color: var(--text-mid); white-space: nowrap;
+  }
+
+  /* ── BADGE ── */
+  .entretien-footer {
+    padding: 7px 14px 9px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #1E3A6E;
+    background: var(--input-bg);
+  }
+  .badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 4px;
+  }
+  .badge-ok   { background: rgba(52,211,153,0.12); color: var(--green);  border: 1px solid #065F46; }
+  .badge-soon { background: rgba(249,115,22,0.12); color: var(--orange); border: 1px solid rgba(249,115,22,0.4); }
+  .badge-due  { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.4); }
+  .badge-na   { background: transparent; color: #4A6080; border: 1px solid #1E3A6E; }
+  .badge-delta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px; color: var(--text-mid); font-weight: 600;
+  }
+
+  /* ── CHART CONTAINER ── */
+  .chart-container {
+    background: var(--card);
+    border: 1px solid #1E3A6E;
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 0;
+    max-width: 100%;
+    margin-top: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .chart-inner { position: relative; min-width: 0; max-width: 100%; background: var(--card); padding-bottom: 0; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 500; color: #4A6080;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 32px 16px;
+    color: #4A6080;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── MODAL ── */
+  .modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 200;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--blue-mid);
+    border-radius: 12px; padding: 20px;
+    width: 100%; max-width: 360px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .modal h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px;
+  }
+  .modal input {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid #1E3A6E;
+    border-radius: 8px;
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px; font-weight: 700;
+    padding: 10px 12px;
+    text-align: center;
+    outline: none; margin-bottom: 14px;
+  }
+  .modal input:focus { border-color: var(--blue-light); }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-cancel {
+    background: none;
+    border: 1px solid #1E3A6E;
+    border-radius: 8px; color: var(--text-mid);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 9px 18px; cursor: pointer;
+  }
+  .btn-confirm {
+    background: rgba(240,192,64,0.12);
+    border: 1.5px solid var(--gold);
+    border-radius: 8px; color: var(--gold);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 700;
+    padding: 9px 18px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-confirm:hover { background: rgba(240,192,64,0.25); }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #0D1F45; }
+  ::-webkit-scrollbar-thumb { background: #1E3A6E; border-radius: 2px; }
+
+
+  /* ── BOUTON IMPRESSION FLOTTANT ── */
+  .btn-print-float {
+    position: fixed;
+    bottom: 20px;
+    right: 16px;
+    z-index: 50;
+    background: rgba(15,34,72,0.95);
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    color: var(--gold);
+    font-size: 20px;
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-print-float:hover { background: rgba(240,192,64,0.18); transform: scale(1.08); }
+
+  /* Pas de CSS print global — géré par printFrise() */
+  @media print { body { display:none; } }
+
+  /* Chaque frise défile dans son propre cadre, y compris sur mobile. */
+  .board-meca, .board-cal {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    background: var(--card);
+    color-scheme: dark;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .board-meca::-webkit-scrollbar,
+  .board-cal::-webkit-scrollbar { height: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Cougar</div>
+    <div class="header-sub">SUIVI ENTRETIENS</div>
+  </div>
+  <div class="version-badge">V1.0</div>
+</div>
+
+<button onclick="printFrise()" class="btn-print-float" title="Imprimer / exporter PDF">🖨</button>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">⚙ Données</div>
+  <div class="tab" onclick="switchTab(1)">📊 Frise</div>
+</div>
+
+<!-- ===================== ONGLET 1 ===================== -->
+<div class="content">
+  <div class="pane active" id="pane0">
+
+    <!-- COUGAR SELECTOR -->
+    <div class="section-label">Appareil</div>
+    <div class="cougar-row">
+      <div class="cougar-label">COUGAR</div>
+      <select class="cougar-select" id="cougarSelect" onchange="onCougarChange()"></select>
+      <button class="btn-add-cougar" onclick="openAddCougar()">+ Ajouter</button>
+    </div>
+
+    <!-- H CELLULE -->
+    <div class="hcell-row">
+      <div class="hcell-label">H CELLULE</div>
+      <input class="input-field" type="number" id="hCellule" min="0" step="0.1" placeholder="0.0" oninput="saveAndRender()">
+      <div class="hcell-unit">h</div>
+    </div>
+
+    <!-- ENTRETIENS -->
+    <div class="entretiens-header">
+      <div class="entretiens-title">Entretiens</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-add" onclick="addEntretien('meca')">＋ Méca</button>
+        <button class="btn-add-cal" onclick="addEntretien('cal')">📅 Cal</button>
+      </div>
+    </div>
+
+    <div id="entretiensList"></div>
+
+  </div>
+
+  <!-- ===================== ONGLET 2 ===================== -->
+  <div class="pane" id="pane1">
+    <div class="section-label">Frise chronologique — H Cellule</div>
+    <div class="chart-container">
+      <div class="chart-inner" id="friseContainer"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#34D399"></div>OK</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#F0C040"></div>Bientôt (tolérance)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div>Dépassé</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Ajouter Cougar -->
+<div class="modal-bg" id="modalCougar">
+  <div class="modal">
+    <h3>Ajouter un appareil</h3>
+    <input type="number" id="newCougarSN" placeholder="N° de série (ex: 2285)" min="1">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('modalCougar')">Annuler</button>
+      <button class="btn-confirm" onclick="confirmAddCougar()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== STATE =====================
+let state = {
+  cougars: [],      // [{ sn: '2285', hCellule: 0, entretiens: [] }]
+  activeSN: null
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('cougar_maintenance_v3');
+    if (s) state = JSON.parse(s);
+  } catch(e) {}
+  if (!state.cougars) state.cougars = [];
+  if (!state.activeSN && state.cougars.length > 0) state.activeSN = state.cougars[0].sn;
+}
+
+function saveState() {
+  localStorage.setItem('cougar_maintenance_v3', JSON.stringify(state));
+}
+
+function getActive() {
+  return state.cougars.find(c => c.sn === state.activeSN) || null;
+}
+
+// ===================== COUGAR =====================
+function onCougarChange() {
+  state.activeSN = document.getElementById('cougarSelect').value;
+  saveState();
+  renderAll();
+}
+
+function openAddCougar() {
+  document.getElementById('newCougarSN').value = '';
+  document.getElementById('modalCougar').classList.add('open');
+  setTimeout(() => document.getElementById('newCougarSN').focus(), 100);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function confirmAddCougar() {
+  const sn = document.getElementById('newCougarSN').value.trim();
+  if (!sn) return;
+  if (state.cougars.find(c => c.sn === sn)) {
+    alert('Ce numéro de série existe déjà.');
+    return;
+  }
+  state.cougars.push({ sn, hCellule: 0, entretiens: [] });
+  state.activeSN = sn;
+  saveState();
+  closeModal('modalCougar');
+  renderAll();
+}
+
+// ===================== ENTRETIENS =====================
+function addEntretien(type = 'meca') {
+  const ac = getActive();
+  if (!ac) { alert('Ajoutez d\'abord un appareil.'); return; }
+  const n = ac.entretiens.length + 1;
+  if (type === 'cal') {
+    ac.entretiens.push({ id: Date.now(), type: 'cal', nom: `Entretien cal. ${n}`, dateEcheance: '', toleranceDays: '' });
+  } else {
+    ac.entretiens.push({ id: Date.now(), type: 'meca', nom: `Entretien ${n}`, hCellule: '', tolerance: '' });
+  }
+  saveState();
+  renderEntretiens();
+  renderFrise();
+}
+
+function deleteEntretien(id) {
+  const ac = getActive();
+  if (!ac) return;
+  ac.entretiens = ac.entretiens.filter(e => e.id !== id);
+  saveState();
+  renderEntretiens();
+  renderFrise();
+}
+
+function updateEntretien(id, field, value) {
+  const ac = getActive();
+  if (!ac) return;
+  const e = ac.entretiens.find(e => e.id === id);
+  if (e) e[field] = value;
+  saveState();
+  // Refresh badges without full re-render
+  refreshBadge(id);
+  renderFrise();
+}
+
+function saveAndRender() {
+  const ac = getActive();
+  if (!ac) return;
+  // Stocker la valeur brute (string) pour ne pas perdre la virgule en cours de frappe
+  ac.hCellule = document.getElementById('hCellule').value;
+  saveState();
+  // Rafraîchir uniquement les badges et la frise, PAS toute la liste
+  // (re-render complet resetterait la valeur de l'input)
+  if (ac.entretiens) {
+    ac.entretiens.forEach(e => refreshBadge(e.id));
+  }
+  renderFrise();
+}
+
+// ===================== BADGE =====================
+function getStatus(entretien, hCellule) {
+  const hE  = parseFloat(entretien.hCellule);
+  const tol = parseFloat(entretien.tolerance) || 0;
+  const hC  = parseFloat(hCellule) || 0;
+  if (isNaN(hE)) return null;
+  if (hC > hE + tol) return { type: 'due',  text: 'DÉPASSÉ',      delta: hE - hC };
+  if (hC >= hE)      return { type: 'soon', text: 'EN TOLÉRANCE', delta: hE - hC };
+  return { type: 'ok', text: 'OK', delta: hE - hC };
+}
+
+function getStatusCal(entretien) {
+  if (!entretien.dateEcheance) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const ech    = new Date(entretien.dateEcheance);
+  const tol    = parseInt(entretien.toleranceDays) || 0;
+  const echTol = new Date(ech); echTol.setDate(echTol.getDate() + tol);
+  const diffJ    = Math.round((ech    - today) / 86400000); // jours avant échéance
+  const diffJTol = Math.round((echTol - today) / 86400000); // jours avant fin tolérance
+  // DÉPASSÉ  : today > fin de tolérance
+  if (today > echTol)  return { type: 'due',  text: 'DÉPASSÉ', diffJ, diffJTol };
+  // BIENTÔT  : moins de 7j avant l'échéance (inclut la période de tolérance)
+  if (diffJ <= 7)      return { type: 'soon', text: 'BIENTÔT', diffJ, diffJTol };
+  // OK       : plus de 7j avant l'échéance
+  return               { type: 'ok',   text: 'OK',      diffJ, diffJTol };
+}
+
+function refreshBadge(id) {
+  const ac = getActive();
+  if (!ac) return;
+  const e = ac.entretiens.find(e => e.id === id);
+  if (!e) return;
+  const footer = document.querySelector(`[data-id="${id}"] .entretien-footer`);
+  if (!footer) return;
+  const cls = s => ({ ok:'badge-ok', soon:'badge-soon', due:'badge-due' }[s.type]);
+  if (e.type === 'cal') {
+    const s = getStatusCal(e);
+    if (!s) { footer.innerHTML = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`; return; }
+    const sign = s.diffJ >= 0 ? '+' : '';
+    footer.innerHTML = `<span class="badge ${cls(s)}">${s.text}</span>
+      <span class="badge-delta">${sign}${s.diffJ}j / fin tol. ${s.diffJTol >= 0 ? '+' : ''}${s.diffJTol}j</span>`;
+  } else {
+    const s = getStatus(e, ac.hCellule || 0);
+    if (!s) { footer.innerHTML = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`; return; }
+    const sign = s.delta >= 0 ? '+' : '';
+    footer.innerHTML = `<span class="badge ${cls(s)}">${s.text}</span>
+      <span class="badge-delta">${sign}${s.delta.toFixed(1)} h</span>`;
+  }
+}
+
+// ===================== RENDER =====================
+function renderCougarSelect() {
+  const sel = document.getElementById('cougarSelect');
+  sel.innerHTML = '';
+  if (state.cougars.length === 0) {
+    sel.innerHTML = '<option value="">— Aucun —</option>';
+    return;
+  }
+  state.cougars.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.sn;
+    opt.textContent = c.sn;
+    if (c.sn === state.activeSN) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function renderEntretiens() {
+  const ac = getActive();
+  const list = document.getElementById('entretiensList');
+  if (!ac) {
+    list.innerHTML = '<div class="empty-state">Aucun appareil sélectionné.</div>';
+    return;
+  }
+  document.getElementById('hCellule').value = ac.hCellule !== undefined ? ac.hCellule : '';
+
+  if (ac.entretiens.length === 0) {
+    list.innerHTML = '<div class="empty-state">Aucun entretien. Cliquez sur « Ajouter ».</div>';
+    return;
+  }
+
+  list.innerHTML = ac.entretiens.map((e, i) => {
+    const isCal = e.type === 'cal';
+
+    // ── Badge footer ──
+    let badgeHtml;
+    if (isCal) {
+      const s = getStatusCal(e);
+      if (!s) {
+        badgeHtml = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`;
+      } else {
+        const cls = { ok:'badge-ok', soon:'badge-soon', due:'badge-due' }[s.type];
+        const sign = s.diffJ >= 0 ? '+' : '';
+        badgeHtml = `<span class="badge ${cls}">${s.text}</span>
+          <span class="badge-delta">${sign}${s.diffJ}j / fin tol. ${s.diffJTol >= 0 ? '+' : ''}${s.diffJTol}j</span>`;
+      }
+    } else {
+      const s = getStatus(e, ac.hCellule || 0);
+      if (!s) {
+        badgeHtml = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`;
+      } else {
+        const cls = { ok:'badge-ok', soon:'badge-soon', due:'badge-due' }[s.type];
+        const sign = s.delta >= 0 ? '+' : '';
+        badgeHtml = `<span class="badge ${cls}">${s.text}</span><span class="badge-delta">${sign}${s.delta.toFixed(1)} h</span>`;
+      }
+    }
+
+    // ── Corps de la card ──
+    const bodyHtml = isCal ? `
+      <div class="field-group">
+        <div class="field-label">Date d'échéance</div>
+        <div class="field-row">
+          <input class="input-num" type="date" value="${e.dateEcheance || ''}"
+            oninput="updateEntretien(${e.id},'dateEcheance',this.value)">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Tolérance</div>
+        <div class="field-row">
+          <input class="input-num" type="number" value="${e.toleranceDays || ''}" min="0" step="1" placeholder="—"
+            oninput="updateEntretien(${e.id},'toleranceDays',this.value)">
+          <span class="field-unit">jours</span>
+        </div>
+      </div>` : `
+      <div class="field-group">
+        <div class="field-label">H Cellule</div>
+        <div class="field-row">
+          <input class="input-num" type="number" value="${e.hCellule}" min="0" step="0.1" placeholder="—"
+            oninput="updateEntretien(${e.id},'hCellule',this.value)">
+          <span class="field-unit">h</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Tolérance</div>
+        <div class="field-row">
+          <input class="input-num" type="number" value="${e.tolerance}" min="0" step="0.1" placeholder="—"
+            oninput="updateEntretien(${e.id},'tolerance',this.value)">
+          <span class="field-unit">h</span>
+        </div>
+      </div>`;
+
+    return `
+    <div class="entretien-card" data-id="${e.id}">
+      <div class="entretien-top">
+        <span class="${isCal ? 'type-badge-cal' : 'type-badge-meca'}">${isCal ? '📅 CAL' : '⚙ MÉCA'}</span>
+        <input class="input-name" value="${escHtml(e.nom)}" placeholder="Nom de l'entretien"
+          oninput="updateEntretien(${e.id},'nom',this.value)">
+        <button class="btn-del" onclick="deleteEntretien(${e.id})" title="Supprimer">✕</button>
+      </div>
+      <div class="entretien-body">${bodyHtml}</div>
+      <div class="entretien-footer">${badgeHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== FRISE =====================
+const ENT_PALETTE = ['#6FA8E8','#F0C040','#B06EE8','#34D399','#F97316','#F05050','#50C8C8','#A0C040'];
+
+function renderFrise() {
+  const ac = getActive();
+  const container = document.getElementById('friseContainer');
+  if (!ac || ac.entretiens.length === 0) {
+    container.innerHTML = '<div class="empty-state">Aucun entretien.</div>'; return;
+  }
+  const validMeca = ac.entretiens.filter(e => e.type !== 'cal' && !isNaN(parseFloat(e.hCellule)));
+  const validCal  = ac.entretiens.filter(e => e.type === 'cal');
+  if (validMeca.length === 0 && validCal.length === 0) {
+    container.innerHTML = '<div class="empty-state">Aucune donnée.</div>'; return;
+  }
+  const hNow = parseFloat(ac.hCellule) || 0;
+  const entColor = e => ENT_PALETTE[ac.entretiens.findIndex(x => x.id === e.id) % ENT_PALETTE.length];
+
+  const LEFT_W = 152, PAD_L = 24, PAD_R = 32, ROW_H = 52, HDR_H = 34, FTR_H = 28;
+
+  // ── BOARD MÉCA ──────────────────────────────────────
+  let mecaHTML = '';
+  if (validMeca.length > 0) {
+    const allHmax   = validMeca.map(e => parseFloat(e.hCellule) + (parseFloat(e.tolerance)||0));
+    const domainMin = Math.max(0, hNow - 1);
+    const domainMax = Math.max(...allHmax) + 5;
+    const range     = Math.max(domainMax - domainMin, 1);
+    const px1h      = Math.max((580 - PAD_L - PAD_R) / range, 8);
+    const trackW    = Math.ceil(range * px1h) + PAD_L + PAD_R;
+    const toX       = h => (h - domainMin) * px1h + PAD_L;
+
+    // Grille CSS background-image (pas de divs, passe derrière le contenu)
+    const firstTick5 = Math.ceil(domainMin / 5) * 5;
+    const px5h       = px1h * 5;
+    const bgPos5     = (toX(firstTick5) % px5h).toFixed(2);
+    const firstTick1 = Math.ceil(domainMin);
+    const bgPos1     = (toX(firstTick1) % px1h).toFixed(2);
+    const gridBg     = `background:#0D1F45;background-image:linear-gradient(90deg,rgba(255,255,255,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:${px5h.toFixed(2)}px 100%,${px1h.toFixed(2)}px 100%;background-position:${bgPos5}px 0,${bgPos1}px 0;`;
+
+    // Ticks labels
+    let ticks = '';
+    for (let t = Math.ceil(domainMin); t <= domainMax + 0.1; t++) {
+      if (t % 5 !== 0) continue;
+      const x = toX(t);
+      ticks += `<div style="position:absolute;left:${x.toFixed(1)}px;top:6px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;color:#94A3B8;white-space:nowrap;">${t.toFixed(1)}</div>`;
+    }
+    const xNow = toX(hNow);
+    const nowLbl = `<div style="position:absolute;left:${xNow.toFixed(1)}px;top:3px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:#3B82F6;background:#112354;padding:1px 5px;border-radius:3px;border:1px solid #3B82F6;white-space:nowrap;z-index:5;">▼ ${hNow.toFixed(1)}h</div>`;
+
+    // Lignes entretiens
+    const gridH = validMeca.length * ROW_H;
+    let rows = '';
+    validMeca.forEach(e => {
+      const hV = parseFloat(e.hCellule), tol = parseFloat(e.tolerance)||0, hE = hV+tol;
+      const x1 = toX(hV), x2 = toX(hE), c = entColor(e);
+      const st = getStatus(e, hNow);
+      const stT = st ? ({ok:'OK',soon:'TOLÉRANCE',due:'DÉPASSÉ'}[st.type]) : '—';
+      const stC = st ? ({ok:'#34D399',soon:'#F97316',due:'#EF4444'}[st.type]) : '#4A6080';
+      const fmt = d => (d>=0?'+':'')+d.toFixed(1);
+      const BT=16, BH=ROW_H-32;
+      let bar = '';
+      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;top:${BT-6}px;width:3px;height:${BH+12}px;background:${c};border-radius:2px;z-index:3;box-shadow:0 0 8px ${c}88;"></div>`;
+      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:${c};white-space:nowrap;z-index:4;">${hV.toFixed(1)}h</div>`;
+      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${c}BB;white-space:nowrap;z-index:4;">${fmt(hV-hNow)}</div>`;
+      if (tol > 0) {
+        bar += `<div style="position:absolute;left:${(x1+3).toFixed(1)}px;top:${BT}px;width:${Math.max(x2-x1-3,2).toFixed(1)}px;height:${BH}px;background:repeating-linear-gradient(-45deg,${c}28 0,${c}28 4px,${c}0c 4px,${c}0c 10px);border-top:1px solid ${c}55;border-bottom:1px solid ${c}55;border-right:2px dashed ${c}70;z-index:1;"></div>`;
+        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;top:${BT-4}px;width:2px;height:${BH+8}px;background:${c}88;z-index:3;"></div>`;
+        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;color:${c}CC;white-space:nowrap;z-index:4;">${hE.toFixed(1)}h</div>`;
+        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${c}BB;white-space:nowrap;z-index:4;">${fmt(hE-hNow)}</div>`;
+      }
+      // Left label (sticky) + right track
+      rows += `<div style="display:flex;height:${ROW_H}px;">
+        <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:10;background:#0D1F45;border-right:2px solid #1E3A6E;border-bottom:1px solid #1E3A6E;display:flex;flex-direction:column;justify-content:center;padding:0 12px 0 14px;gap:3px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:${c};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.nom)}</div>
+          <div style="font-size:10px;font-weight:700;color:${stC};">${stT}</div>
+        </div>
+        <div style="position:relative;height:${ROW_H}px;flex:1;border-bottom:1px solid #1E3A6E;overflow-x:clip;overflow-y:visible;">${bar}</div>
+      </div>`;
+    });
+
+    mecaHTML = `
+      <div class="board-meca" style="overflow-x:auto;border-radius:10px;border:1px solid #1E3A6E;box-shadow:0 4px 16px rgba(0,0,0,0.35);">
+        <div style="position:relative;width:${LEFT_W + trackW}px;">
+          <!-- En-tête -->
+          <div style="display:flex;position:sticky;top:0;z-index:8;background:#112354;border-bottom:2px solid #1E3A6E;height:${HDR_H}px;">
+            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:9;background:#112354;border-right:2px solid #1E3A6E;display:flex;align-items:center;padding:0 12px;">
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#4A6080;letter-spacing:.1em;text-transform:uppercase;">Entretien</span>
+            </div>
+            <div style="flex:1;position:relative;overflow:visible;">${ticks}${nowLbl}</div>
+          </div>
+          <!-- Lignes avec grille CSS -->
+          <div style="position:relative;${gridBg}">
+            <!-- Marqueur position actuelle (toute la hauteur des lignes) -->
+            <div style="position:absolute;left:${(LEFT_W+xNow).toFixed(1)}px;top:0;width:2px;height:100%;background:linear-gradient(to bottom,#3B82F6,#3B82F666);z-index:2;pointer-events:none;"></div>
+            ${rows}
+          </div>
+          <!-- Pied -->
+          <div style="display:flex;border-top:2px solid #1E3A6E;height:${FTR_H}px;background:#0F2248;">
+            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;background:#0F2248;border-right:2px solid #1E3A6E;z-index:3;"></div>
+            <div style="flex:1;position:relative;overflow:visible;">${ticks}</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:6px;text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:9px;color:#4A6080;letter-spacing:1px;">heures cellule →</div>`;
+  }
+
+  // ── BOARD CALENDAIRE ─────────────────────────────────
+  let calHTML = '';
+  if (validCal.length > 0) {
+    const MS = 86400000, ORANGE = '#F97316';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const ends  = validCal.filter(e=>e.dateEcheance).map(e=>{ const d=new Date(e.dateEcheance); d.setDate(d.getDate()+(parseInt(e.toleranceDays)||0)); return d.getTime(); });
+    const cMin  = today.getTime() - MS;
+    const cMax  = (ends.length?Math.max(...ends):today.getTime()) + 5*MS;
+    const cRange= (cMax-cMin)/MS || 1;
+    const px_d  = Math.max(580/cRange, 12);
+    const cW    = Math.ceil(cRange*px_d) + PAD_L + PAD_R;
+    const toD   = ts => ((ts-cMin)/MS)*px_d + PAD_L;
+    const CAL_H = 52, CAL_HDR = 30, CAL_FTR = 26;
+    const xTod  = toD(today.getTime());
+
+    // Grille jours via CSS background
+    const bgPosCal = (toD(cMin + MS) % px_d).toFixed(2);
+    const gridBgCal= `background:#0D1F45;background-image:linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);background-size:${px_d.toFixed(2)}px 100%;background-position:${bgPosCal}px 0;`;
+
+    let calTicks = '';
+    for (let i=0;i<=Math.ceil(cRange)+1;i++) {
+      const d=new Date(cMin+i*MS), x=toD(d.getTime()), isT=d.toDateString()===today.toDateString();
+      if(i%3===0||isT) calTicks+=`<div style="position:absolute;left:${x.toFixed(1)}px;top:6px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:${isT?700:600};color:${isT?'#3B82F6':'#94A3B8'};white-space:nowrap;">${isT?'Auj.':d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
+    }
+    const todayLbl=`<div style="position:absolute;left:${xTod.toFixed(1)}px;top:3px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:#3B82F6;background:#1a120a;padding:1px 5px;border-radius:3px;border:1px solid #3B82F6;white-space:nowrap;z-index:5;">▼ Auj.</div>`;
+
+    const calGridH = validCal.length * CAL_H;
+    let calRows = '';
+    validCal.forEach(e => {
+      const idx=ac.entretiens.findIndex(x=>x.id===e.id), c=ENT_PALETTE[idx%ENT_PALETTE.length];
+      const s=getStatusCal(e);
+      const stT=s?({ok:'OK',soon:'BIENTÔT',due:'DÉPASSÉ'}[s.type]):'—';
+      const stC=s?({ok:'#34D399',soon:'#F97316',due:'#EF4444'}[s.type]):'#4A6080';
+      const BT=16,BH=CAL_H-32; let bar='';
+      if(e.dateEcheance){
+        const dS=new Date(e.dateEcheance),tol=parseInt(e.toleranceDays)||0;
+        const dE=new Date(dS); dE.setDate(dE.getDate()+tol);
+        const x1=toD(dS.getTime()),x2=toD(dE.getTime());
+        const fmtD=d=>(d>=0?'+':'')+d+'j';
+        bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;top:${BT-6}px;width:3px;height:${BH+12}px;background:${ORANGE};border-radius:2px;z-index:3;box-shadow:0 0 8px ${ORANGE}88;"></div>`;
+        bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:${ORANGE};white-space:nowrap;z-index:4;">${dS.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
+        if(s) bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${ORANGE}BB;white-space:nowrap;z-index:4;">${fmtD(s.diffJ)}</div>`;
+        if(tol>0){
+          bar+=`<div style="position:absolute;left:${(x1+3).toFixed(1)}px;top:${BT}px;width:${Math.max(x2-x1-3,2).toFixed(1)}px;height:${BH}px;background:repeating-linear-gradient(-45deg,${ORANGE}28 0,${ORANGE}28 4px,${ORANGE}0c 4px,${ORANGE}0c 10px);border-top:1px solid ${ORANGE}55;border-bottom:1px solid ${ORANGE}55;border-right:2px dashed ${ORANGE}70;z-index:1;"></div>`;
+          bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;top:${BT-4}px;width:2px;height:${BH+8}px;background:${ORANGE}88;z-index:3;"></div>`;
+          bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;color:${ORANGE}CC;white-space:nowrap;z-index:4;">${dE.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
+          if(s) bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${ORANGE}BB;white-space:nowrap;z-index:4;">${fmtD(s.diffJTol)}</div>`;
+        }
+      }
+      calRows+=`<div style="display:flex;height:${CAL_H}px;">
+        <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:10;background:#0D1F45;border-right:2px solid rgba(249,115,22,.35);border-bottom:1px solid rgba(249,115,22,.2);display:flex;flex-direction:column;justify-content:center;padding:0 12px 0 14px;gap:3px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:${c};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.nom)}</div>
+          <div style="font-size:10px;font-weight:700;color:${stC};">${stT}</div>
+        </div>
+        <div style="position:relative;height:${CAL_H}px;flex:1;border-bottom:1px solid rgba(249,115,22,.2);overflow-x:clip;overflow-y:visible;">${bar}</div>
+      </div>`;
+    });
+
+    calHTML = `
+      <div class="board-cal" style="margin-top:12px;overflow-x:auto;border-radius:10px;border:1px solid rgba(249,115,22,.4);box-shadow:0 4px 16px rgba(0,0,0,.35);">
+        <div style="position:relative;width:${LEFT_W + cW}px;">
+          <div style="display:flex;position:sticky;top:0;z-index:8;background:#1a120a;border-bottom:2px solid rgba(249,115,22,.5);height:${CAL_HDR}px;">
+            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:9;background:#1a120a;border-right:2px solid rgba(249,115,22,.4);display:flex;align-items:center;padding:0 10px;gap:6px;">
+              <span style="font-size:13px;">📅</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#F97316AA;letter-spacing:.1em;text-transform:uppercase;">CALENDAIRE</span>
+            </div>
+            <div style="flex:1;position:relative;overflow:visible;">${calTicks}${todayLbl}</div>
+          </div>
+          <div style="position:relative;${gridBgCal}">
+            <div style="position:absolute;left:${(LEFT_W+xTod).toFixed(1)}px;top:0;width:2px;height:100%;background:linear-gradient(to bottom,#3B82F6,#3B82F666);z-index:2;pointer-events:none;"></div>
+            ${calRows}
+          </div>
+          <div style="display:flex;border-top:2px solid rgba(249,115,22,.3);height:${CAL_FTR}px;background:#150d05;">
+            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;background:#150d05;border-right:2px solid rgba(249,115,22,.3);z-index:3;"></div>
+            <div style="flex:1;position:relative;overflow:visible;">${calTicks}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = mecaHTML + calHTML;
+}
+// ===================== UTILS =====================
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===================== TABS =====================
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+  document.querySelectorAll('.pane').forEach((p, idx) => p.classList.toggle('active', idx === i));
+  if (i === 1) renderFrise();
+}
+
+// ===================== RENDER ALL =====================
+function renderAll() {
+  renderCougarSelect();
+  renderEntretiens();
+  renderFrise();
+}
+
+// ===================== IMPRESSION =====================
+function printFrise() {
+  const ac = getActive();
+  if (!ac) { alert('Aucun appareil sélectionné.'); return; }
+  const container = document.getElementById('friseContainer');
+  if (!container || !container.innerHTML.trim()) { alert('Aucune frise à imprimer.'); return; }
+
+  // Dimensions réelles du contenu (défilement inclus)
+  // Les cadres restent étroits à l'écran ; mesurer leur contenu pour imprimer toute la frise.
+  const boards = container.querySelectorAll('.board-meca, .board-cal');
+  const totalW = Math.max(container.scrollWidth, ...Array.from(boards, board => board.scrollWidth + 2));
+  const totalH = container.scrollHeight;
+
+  // A4 paysage avec marges 8mm → zone utile 281mm × 194mm → px à 96dpi
+  const A4W = Math.round(281 * 96 / 25.4);   // ~1063px
+  const A4H = Math.round(194 * 96 / 25.4);   // ~734px
+  const scale = Math.min(A4W / totalW, A4H / (totalH + 24)); // +24 pour le titre
+
+  // Cloner le HTML de la frise et adapter les couleurs pour fond blanc
+  let b = container.innerHTML;
+
+  // Fonds sombres → blanc
+  ['#0D1F45','#112354','#0F2248','#0B1A35','#091530'].forEach(c => {
+    b = b.split('background:'+c).join('background:#ffffff');
+  });
+  b = b.split('background:#1a120a').join('background:#fff5e6');
+  b = b.split('background:#150d05').join('background:#fff5e6');
+  b = b.split('background:#0f2248').join('background:#ffffff');
+
+  // Grilles blanches à l'écran → gris bleuté visible sur le fond blanc imprimé
+  b = b.split('rgba(255,255,255,.28)').join('rgba(70,100,145,.50)');
+  b = b.split('rgba(255,255,255,.07)').join('rgba(70,100,145,.16)');
+  b = b.split('rgba(255,255,255,.18)').join('rgba(70,100,145,.38)');
+
+  // Bordures sombres → gris clair
+  b = b.split('#1E3A6E').join('#c2cfe0');
+  b = b.split('rgba(30,58,110,0.55)').join('rgba(120,150,200,0.35)');
+  b = b.split('rgba(30,58,110,0.5)').join('rgba(120,150,200,0.35)');
+  b = b.split('rgba(30,58,110,0.4)').join('rgba(120,150,200,0.25)');
+  b = b.split('rgba(94,130,168,0.40)').join('rgba(80,110,160,0.55)');
+  b = b.split('rgba(249,115,22,0.4)').join('rgba(249,115,22,0.55)');
+  b = b.split('rgba(249,115,22,0.3)').join('rgba(249,115,22,0.45)');
+  b = b.split('rgba(249,115,22,0.2)').join('rgba(249,115,22,0.35)');
+  b = b.split('rgba(139,92,246,0.4)').join('rgba(139,92,246,0.55)');
+
+  // Textes clairs → sombres
+  b = b.split('color:#94A3B8').join('color:#4a5568');
+  b = b.split('color:#4A6080').join('color:#718096');
+  b = b.split('color:#E8EEF8').join('color:#1a202c');
+  b = b.split('color:#C9D1D9').join('color:#1a202c');
+  b = b.split('color:#C4B5FD').join('color:#6d28d9');
+  b = b.split('color:#F97316AA').join('color:#c2570a');
+  b = b.split('color:#F97316BB').join('color:#c2570a');
+
+  // Supprimer les scrolls (tout doit être visible pour l'impression)
+  b = b.split('overflow-x:auto').join('overflow:visible');
+  b = b.split('overflow-x:clip').join('overflow:visible');
+  b = b.split('overflow:hidden').join('overflow:visible');
+
+  const header = ac.sn + ' &nbsp;·&nbsp; H Cellule : ' + (parseFloat(ac.hCellule)||0).toFixed(1) + 'h &nbsp;·&nbsp; Édité le ' +
+    new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  const doc = `<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<title>Cougar ${ac.sn} — Frise</title>
+<meta name="theme-color" content="#0F2248">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cougar">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="shortcut icon" href="icon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4 landscape; margin: 8mm; }
+  * { box-sizing:border-box; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+  body { margin:0; padding:0; background:#fff; font-family:'Barlow',sans-serif; overflow:hidden; }
+  .ph {
+    font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700;
+    color:#1a3a6a; letter-spacing:.1em; text-transform:uppercase;
+    border-bottom:2px solid #c2cfe0; padding-bottom:4px; margin-bottom:6px;
+  }
+  .fw { transform-origin:top left; transform:scale(${scale.toFixed(5)}); width:${totalW}px; }
+</style></head>
+<body>
+  <div class="ph">🚁 &nbsp; COUGAR &nbsp;|&nbsp; ${header}</div>
+  <div class="fw">${b}</div>
+</body></html>`;
+
+  const win = window.open('','_blank','width=1400,height=900');
+  if (!win) { alert('Autorisez les popups pour imprimer (paramètres navigateur).'); return; }
+  win.document.open();
+  win.document.write(doc);
+  win.document.close();
+  // Attendre le chargement des polices avant d'imprimer
+  win.addEventListener('load', () => setTimeout(() => { win.focus(); win.print(); }, 600));
+}
+
+// ===================== INIT =====================
+loadState();
+
+// Demo data if empty
+if (state.cougars.length === 0) {
+  state.cougars = [
+    {
+      sn: '2285',
+      hCellule: '1820',
+      entretiens: [
+        { id: 1, type: 'meca', nom: 'Tirant moteur',  hCellule: '1825', tolerance: '5'  },
+        { id: 2, type: 'meca', nom: 'Graissage MRA',  hCellule: '1840', tolerance: '10' },
+        { id: 3, type: 'meca', nom: 'OHV 50h',        hCellule: '1860', tolerance: '8'  }
+      ]
+    },
+    { sn: '2324', hCellule: '0', entretiens: [] }
+  ];
+  state.activeSN = '2285';
+  saveState();
+}
+
+renderAll();
+
+// ── Service Worker (PWA offline) ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW enregistré'))
+      .catch(e => console.warn('SW erreur:', e));
+  });
+}
+
+
+// ── Service Worker (PWA offline) ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW enregistré'))
+      .catch(e => console.warn('SW erreur:', e));
+  });
+}
+
+</script>
+</body>
+</html>
