@@ -14,7 +14,9 @@
 <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="shortcut icon" href="icon.ico">
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -37,12 +39,29 @@
     --card:        #0D1F45;
     --card2:       #112354;
     --input-bg:    #091530;
+    --font-body:    'Plus Jakarta Sans', sans-serif;   /* même police en thème clair et sombre */
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    /* FRISE theming vars (dark defaults) */
+    --frise-bg:      #0D1F45;
+    --frise-bg2:     #112354;
+    --frise-bg3:     #0F2248;
+    --frise-bord:    #1E3A6E;
+    --frise-tick:    #94A3B8;
+    --frise-dim:     #4A6080;
+    --frise-now-c:   #3B82F6;
+    --frise-now-bg:  #112354;
+    --frise-grid-s:  rgba(255,255,255,.28);
+    --frise-grid-l:  rgba(255,255,255,.07);
+    --frise-cal-hdr: #1a120a;
+    --frise-cal-ftr: #150d05;
+    --frise-cal-gl:  rgba(255,255,255,.18);
+    --frise-tw-bg:   rgba(13,31,69,.85);
   }
 
   body {
     background: var(--blue-deep);
-    color: #E8EEF8;
-    font-family: 'Barlow', sans-serif;
+    color: var(--text);
+    font-family: var(--font-body);
     font-size: 15px;
     min-height: 100vh;
     padding-bottom: 80px;
@@ -75,7 +94,7 @@
   }
 
   .header-title {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 22px; font-weight: 700;
     color: var(--gold); letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -89,7 +108,7 @@
   }
   .version-badge {
     position: absolute; top: 8px; right: 12px;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 10px; font-weight: 700;
     color: var(--gold-dim); letter-spacing: 0.1em;
     opacity: 0.6; z-index: 2;
@@ -99,15 +118,15 @@
   .tabs {
     display: flex;
     background: var(--blue-dark);
-    border-bottom: 1px solid #1E3A6E;
+    border-bottom: 1px solid var(--border);
   }
   .tab {
     flex: 1; padding: 12px 8px;
     text-align: center;
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 13px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase;
-    color: #4A6080;
+    color: var(--text-dim);
     cursor: pointer;
     border-bottom: 3px solid transparent;
     transition: all 0.2s;
@@ -120,13 +139,15 @@
 
   /* ── CONTENT ── */
   .content { padding: 14px; max-width: 700px; margin: 0 auto; }
+  /* Frise needs full viewport width — override the 700 px cap */
+  .content.frise-mode { max-width: 100%; }
   .pane { display: none; }
   .pane.active { display: block; }
 
   /* ── SECTION ── */
   .section {
     background: var(--card);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 12px;
@@ -136,7 +157,7 @@
   .section-header {
     background: var(--card2);
     padding: 9px 16px;
-    border-bottom: 1px solid #1E3A6E;
+    border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
   }
   .section.accent .section-header {
@@ -144,7 +165,7 @@
     border-color: var(--blue-light);
   }
   .section-title {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 13px; font-weight: 700;
     color: var(--text-mid); letter-spacing: 0.08em; text-transform: uppercase;
   }
@@ -154,7 +175,7 @@
   /* ── SECTION LABEL (small) ── */
   .section-label {
     font-size: 11px; font-weight: 700;
-    color: #4A6080; letter-spacing: 0.08em;
+    color: var(--text-dim); letter-spacing: 0.08em;
     text-transform: uppercase; margin-bottom: 6px;
   }
 
@@ -164,7 +185,7 @@
     padding: 12px 0;
   }
   .cougar-label {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 16px; font-weight: 700;
     letter-spacing: 0.08em; color: var(--gold);
     white-space: nowrap;
@@ -172,10 +193,10 @@
   .cougar-select {
     flex: 1;
     background: var(--input-bg);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: #E8EEF8;
-    font-family: 'Barlow Condensed', sans-serif;
+    color: var(--text);
+    font-family: var(--font-display);
     font-size: 18px; font-weight: 700;
     padding: 9px 12px;
     outline: none; cursor: pointer;
@@ -186,10 +207,10 @@
   /* ── BTN ADD COUGAR ── */
   .btn-add-cougar {
     background: var(--input-bg);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--text-mid);
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px; font-weight: 600;
     padding: 9px 14px;
     cursor: pointer;
@@ -198,22 +219,42 @@
   }
   .btn-add-cougar:hover { border-color: var(--blue-light); color: var(--blue-pale); }
 
+  /* ── BTN DELETE COUGAR ── */
+  .btn-del-cougar {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-mid);
+    font-family: var(--font-body);
+    font-size: 13px; font-weight: 600;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-del-cougar:hover:not(:disabled) { border-color: rgba(239,68,68,.7); color: var(--red); background: rgba(239,68,68,.1); }
+  .btn-del-cougar:disabled { opacity: .35; cursor: not-allowed; }
+  @media (max-width: 440px) {
+    .btn-del-cougar .lbl { display: none; }
+    .btn-del-cougar { padding: 9px 11px; }
+  }
+
   /* ── H CELLULE ── */
   .hcell-row {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 0;
-    border-top: 1px solid #1E3A6E;
+    border-top: 1px solid var(--border);
   }
   .hcell-label {
     font-size: 14px; font-weight: 600;
-    color: #E8EEF8; flex: 1;
+    color: var(--text); flex: 1;
   }
   .input-field {
     background: var(--input-bg);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--gold);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 20px; font-weight: 700;
     padding: 9px 12px;
     outline: none; width: 130px;
@@ -232,7 +273,7 @@
     border: 1.5px solid var(--blue-light);
     border-radius: 8px;
     color: var(--blue-pale);
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px; font-weight: 700;
     padding: 7px 14px;
     cursor: pointer;
@@ -246,7 +287,7 @@
     border: 1.5px solid #8B5CF6;
     border-radius: 8px;
     color: #C4B5FD;
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px; font-weight: 700;
     padding: 7px 14px;
     cursor: pointer;
@@ -255,6 +296,41 @@
     letter-spacing: 0.04em;
   }
   .btn-add-cal:hover { background: rgba(139,92,246,0.15); }
+  .btn-clear-all {
+    padding: 6px 11px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    font-family: var(--font-display); letter-spacing: .04em; cursor: pointer;
+    border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.08);
+    color: #F87171; transition: background .15s, border-color .15s;
+  }
+  .btn-clear-all:hover { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.7); }
+  .btn-export {
+    background: var(--input-bg);
+    border: 1.5px solid var(--green);
+    border-radius: 8px;
+    color: var(--green);
+    font-family: var(--font-body);
+    font-size: 13px; font-weight: 700;
+    padding: 7px 12px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .btn-export:hover { background: rgba(52,211,153,.14); }
+
+  /* ── FRISE : barre de réglages (zoom + largeur de la colonne « Entretien ») ── */
+  .frise-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 14px; margin-bottom:6px; }
+  .frise-ctls { display:flex; align-items:center; flex-wrap:wrap; gap:6px 14px; }
+  .frise-ctl-grp { display:flex; align-items:center; gap:6px; }
+  .frise-ctl-lbl { font-family:var(--font-display); font-size:11px; color:var(--text-dim); letter-spacing:.05em; }
+  .frise-btn {
+    width:28px; height:28px; padding:0; border-radius:6px; border:1px solid var(--border);
+    background:var(--card); color:var(--blue-light); font-size:16px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-body);
+  }
+  .frise-btn:hover { border-color:var(--blue-light); }
+  .frise-btn-txt { width:auto; padding:0 8px; color:var(--text-dim); font-family:var(--font-display); font-size:11px; letter-spacing:.05em; }
+  .lw-grip:hover > div, .lw-grip:active > div { opacity:1 !important; }
 
   /* badge type */
   .type-badge-meca { background: rgba(59,130,246,0.15); color: #6FA8E8; border: 1px solid rgba(59,130,246,0.4); border-radius:4px; font-size:10px; font-weight:700; padding:2px 7px; letter-spacing:0.06em; white-space:nowrap; }
@@ -269,7 +345,7 @@
   /* ── ENTRETIEN CARD ── */
   .entretien-card {
     background: var(--card);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 12px;
     margin-bottom: 10px;
     overflow: hidden;
@@ -281,11 +357,11 @@
   .entretien-top {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 14px;
-    border-bottom: 1px solid #1E3A6E;
+    border-bottom: 1px solid var(--border);
     background: var(--card2);
   }
   .entretien-num {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 11px; font-weight: 700;
     letter-spacing: 0.1em;
     color: var(--gold);
@@ -299,20 +375,38 @@
     flex: 1;
     background: transparent;
     border: none;
-    border-bottom: 1px solid #1E3A6E;
-    color: #E8EEF8;
-    font-family: 'Barlow', sans-serif;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
     font-size: 14px; font-weight: 600;
     padding: 4px 6px;
     outline: none;
     transition: border-color 0.2s;
   }
   .input-name:focus { border-bottom-color: var(--gold); }
-  .input-name::placeholder { color: #4A6080; font-weight: 400; }
+  .input-name::placeholder { color: var(--text-dim); font-weight: 400; }
+
+  .entretien-names {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .input-desig {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-body);
+    font-size: 12px; font-weight: 400; font-style: italic;
+    padding: 2px 6px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-desig:focus { border-bottom-color: var(--gold); font-style: normal; }
+  .input-desig::placeholder { color: var(--text-dim); opacity: 0.5; }
 
   .btn-del {
     background: none; border: none;
-    color: #4A6080;
+    color: var(--text-dim);
     font-size: 18px; cursor: pointer;
     padding: 4px; line-height: 1;
     transition: color 0.2s; flex-shrink: 0;
@@ -329,17 +423,17 @@
   .field-label {
     font-size: 10px; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase;
-    color: #4A6080;
+    color: var(--text-dim);
   }
   .field-row {
     display: flex; align-items: center; gap: 6px;
   }
   .input-num {
     background: var(--input-bg);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--gold);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 18px; font-weight: 700;
     padding: 8px 10px;
     outline: none; width: 100%;
@@ -356,11 +450,11 @@
   .entretien-footer {
     padding: 7px 14px 9px;
     display: flex; justify-content: space-between; align-items: center;
-    border-top: 1px solid #1E3A6E;
+    border-top: 1px solid var(--border);
     background: var(--input-bg);
   }
   .badge {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 12px; font-weight: 700;
     letter-spacing: 0.06em;
     padding: 3px 10px; border-radius: 4px;
@@ -368,16 +462,16 @@
   .badge-ok   { background: rgba(52,211,153,0.12); color: var(--green);  border: 1px solid #065F46; }
   .badge-soon { background: rgba(249,115,22,0.12); color: var(--orange); border: 1px solid rgba(249,115,22,0.4); }
   .badge-due  { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.4); }
-  .badge-na   { background: transparent; color: #4A6080; border: 1px solid #1E3A6E; }
+  .badge-na   { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
   .badge-delta {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 12px; color: var(--text-mid); font-weight: 600;
   }
 
   /* ── CHART CONTAINER ── */
   .chart-container {
     background: var(--card);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
     min-width: 0;
@@ -393,14 +487,14 @@
   }
   .legend-item {
     display: flex; align-items: center; gap: 6px;
-    font-size: 11px; font-weight: 500; color: #4A6080;
+    font-size: 11px; font-weight: 500; color: var(--text-dim);
   }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
 
   /* ── EMPTY STATE ── */
   .empty-state {
     text-align: center; padding: 32px 16px;
-    color: #4A6080;
+    color: var(--text-dim);
     font-size: 13px; font-weight: 500;
     letter-spacing: 0.04em;
   }
@@ -420,7 +514,7 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   }
   .modal h3 {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 16px; font-weight: 700;
     letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--gold); margin-bottom: 14px;
@@ -428,10 +522,10 @@
   .modal input {
     width: 100%;
     background: var(--input-bg);
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--gold);
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: var(--font-display);
     font-size: 20px; font-weight: 700;
     padding: 10px 12px;
     text-align: center;
@@ -441,9 +535,9 @@
   .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
   .btn-cancel {
     background: none;
-    border: 1px solid #1E3A6E;
+    border: 1px solid var(--border);
     border-radius: 8px; color: var(--text-mid);
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px; font-weight: 600;
     padding: 9px 18px; cursor: pointer;
   }
@@ -451,7 +545,7 @@
     background: rgba(240,192,64,0.12);
     border: 1.5px solid var(--gold);
     border-radius: 8px; color: var(--gold);
-    font-family: 'Barlow', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px; font-weight: 700;
     padding: 9px 18px; cursor: pointer;
     transition: background 0.2s;
@@ -460,8 +554,8 @@
 
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: #0D1F45; }
-  ::-webkit-scrollbar-thumb { background: #1E3A6E; border-radius: 2px; }
+  ::-webkit-scrollbar-track { background: var(--card); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 
   /* ── BOUTON IMPRESSION FLOTTANT ── */
@@ -501,7 +595,175 @@
   }
   .board-meca::-webkit-scrollbar,
   .board-cal::-webkit-scrollbar { height: 0; }
+
+  /* ── PDF IMPORT MODAL ── */
+  .modal-import { max-width: 760px; width: 94vw; }
+  .import-steps { display:flex; gap:4px; margin-bottom:14px; }
+  .import-step {
+    flex:1; text-align:center;
+    font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700;
+    letter-spacing:.08em; color:var(--text-dim);
+    padding:5px 0; border-bottom:2px solid var(--border);
+  }
+  .import-step.active { color:var(--gold); border-bottom-color:var(--gold); }
+  .import-drop {
+    border:2px dashed var(--blue-mid); border-radius:8px;
+    padding:22px 16px; text-align:center; cursor:pointer;
+    color:var(--text-mid); margin-bottom:12px;
+    transition:border-color .2s,color .2s;
+  }
+  .import-drop:hover { border-color:var(--blue-bright); color:var(--text); }
+  .drop-hint { font-size:12px; margin-top:4px; opacity:.6; }
+  .detect-grid {
+    display:grid; grid-template-columns:auto 1fr; gap:6px 12px;
+    padding:10px 0; font-size:14px;
+  }
+  .detect-label { color:var(--text-mid); font-size:13px; align-self:center; }
+  .detect-val { font-weight:600; }
+  .import-error {
+    background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4);
+    border-radius:6px; color:#EF4444; padding:8px 12px; font-size:13px; margin-top:10px;
+  }
+  .import-spinner { text-align:center; padding:16px; color:var(--text-mid); font-size:13px; }
+  .import-table-wrap {
+    max-height:50vh; overflow-y:auto;
+    border:1px solid var(--border); border-radius:8px;
+  }
+  .import-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .import-table th {
+    position:sticky; top:0; background:var(--card2);
+    padding:7px 8px; text-align:left;
+    font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700;
+    color:var(--text-mid); letter-spacing:.08em; text-transform:uppercase;
+    border-bottom:2px solid var(--border); z-index:2;
+  }
+  .import-table td { padding:5px 8px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .import-table tr:last-child td { border-bottom:0; }
+  .import-table tr:nth-child(even) { background:rgba(255,255,255,.03); }
+  .import-cell-input {
+    background:var(--input-bg); border:1px solid var(--border);
+    border-radius:4px; color:var(--text); font-size:12px;
+    padding:3px 6px; width:100%; min-width:80px;
+  }
+  .import-cell-input:focus { outline:none; border-color:var(--blue-bright); }
+  .import-ech,.import-tol {
+    font-family:'Barlow Condensed',sans-serif; font-size:12px;
+    white-space:nowrap; color:var(--text-mid);
+  }
+  .import-type-badge {
+    font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700;
+    padding:2px 6px; border-radius:3px; white-space:nowrap;
+    background:rgba(255,255,255,.06); letter-spacing:.04em;
+  }
+  .btn-import-pdf {
+    background:var(--blue-mid); border:1.5px solid var(--blue-bright);
+    color:#fff; border-radius:7px;
+    font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700;
+    padding:6px 12px; cursor:pointer; letter-spacing:.04em;
+  }
+  .btn-import-pdf:hover { background:var(--blue-bright); }
+  /* Dual type in cards */
+  .type-badge-dual {
+    font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700;
+    color:#fff; background:#7C3AED; padding:2px 7px; border-radius:4px;
+    letter-spacing:.06em; white-space:nowrap;
+  }
+  .entretien-body.dual { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+
+  /* ─────── LIGHT THEME OVERRIDES ─────── */
+  [data-theme="light"] {
+    --blue-deep:   #F5F6FA;
+    --blue-dark:   #ECEEF6;
+    --blue-mid:    rgba(74,108,247,0.10);
+    --blue-bright: #4A6CF7;
+    --blue-light:  #6B8CF9;
+    --blue-pale:   #EEF2FF;
+    --gold:        #D4820A;
+    --gold-dim:    #B86E08;
+    --green:       #16A34A;
+    --green-dark:  #14532D;
+    --orange:      #EA6500;
+    --red:         #DC2626;
+    --text:        #1A2340;
+    --text-mid:    #4B5672;
+    --text-dim:    #8892A8;
+    --border:      #D4D9EE;
+    --card:        #FFFFFF;
+    --card2:       #F0F2FA;
+    --input-bg:    #F8F9FC;
+    /* FRISE light vars */
+    --frise-bg:      #F8F9FC;
+    --frise-bg2:     #F0F2FA;
+    --frise-bg3:     #F5F6FA;
+    --frise-bord:    #D4D9EE;
+    --frise-tick:    #6B7A9F;
+    --frise-dim:     #8892A8;
+    --frise-now-c:   #4A6CF7;
+    --frise-now-bg:  #EEF2FF;
+    --frise-grid-s:  rgba(0,0,0,.14);
+    --frise-grid-l:  rgba(0,0,0,.05);
+    --frise-cal-hdr: #FFF8F0;
+    --frise-cal-ftr: #FFF8F0;
+    --frise-cal-gl:  rgba(0,0,0,.09);
+    --frise-tw-bg:   rgba(255,255,255,.92);
+  }
+  [data-theme="light"] body { color: var(--text); }
+  [data-theme="light"] .header {
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border);
+    border-top: 3px solid #4A6CF7;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+  [data-theme="light"] .header::before { opacity: 0.05; }
+  [data-theme="light"] .tabs { background: #FFFFFF; border-bottom: 1px solid var(--border); }
+  [data-theme="light"] .tab { color: var(--text-dim); }
+  [data-theme="light"] .tab.active { color: var(--blue-bright); border-bottom-color: var(--blue-bright); background: rgba(74,108,247,0.06); }
+  [data-theme="light"] .header-title { color: var(--gold); }
+  [data-theme="light"] .header-sub { color: var(--text-mid); }
+  [data-theme="light"] .version-badge { color: var(--gold-dim); }
+  [data-theme="light"] .section { box-shadow: 0 1px 6px rgba(0,0,0,0.07); border-color: var(--border); }
+  [data-theme="light"] .section-header { border-bottom-color: var(--border); }
+  [data-theme="light"] .entretien-card { box-shadow: 0 1px 6px rgba(0,0,0,0.07); border-color: var(--border); }
+  [data-theme="light"] .entretien-card:hover { border-color: var(--blue-bright); box-shadow: 0 3px 12px rgba(74,108,247,0.12); }
+  [data-theme="light"] .entretien-top { border-bottom-color: var(--border); }
+  [data-theme="light"] .hcell-row { border-top-color: var(--border); }
+  [data-theme="light"] .modal-bg { background: rgba(15,20,45,0.45); }
+  [data-theme="light"] .modal { box-shadow: 0 8px 40px rgba(0,0,0,0.15); }
+  [data-theme="light"] ::-webkit-scrollbar-track { background: #F0F2FA; }
+  [data-theme="light"] ::-webkit-scrollbar-thumb { background: #C8CEDF; }
+  [data-theme="light"] .btn-print-float { background: rgba(255,255,255,0.95); border-color: var(--blue-bright); color: var(--blue-bright); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+  [data-theme="light"] .type-badge-meca { background: rgba(74,108,247,0.08); color: #4A6CF7; border-color: rgba(74,108,247,0.35); }
+  [data-theme="light"] .type-badge-cal  { background: rgba(124,58,237,0.08); color: #7C3AED; border-color: rgba(124,58,237,0.35); }
+  [data-theme="light"] .btn-add { background: rgba(74,108,247,0.06); border-color: var(--blue-bright); color: var(--blue-bright); }
+  [data-theme="light"] .btn-add:hover { background: rgba(74,108,247,0.14); }
+  [data-theme="light"] .btn-add-cal { background: rgba(124,58,237,0.06); border-color: #7C3AED; color: #7C3AED; }
+  [data-theme="light"] .btn-add-cal:hover { background: rgba(124,58,237,0.14); }
+  [data-theme="light"] .btn-add-cougar:hover { border-color: var(--blue-bright); color: var(--blue-bright); background: rgba(74,108,247,0.06); }
+  [data-theme="light"] .btn-import-pdf { background: rgba(74,108,247,0.08); border-color: var(--blue-bright); color: var(--blue-bright); }
+  [data-theme="light"] .btn-import-pdf:hover { background: var(--blue-bright); color: #fff; }
+  [data-theme="light"] .badge-ok   { background: rgba(22,163,74,0.09);  color: var(--green); border-color: rgba(22,163,74,0.3); }
+  [data-theme="light"] .badge-soon { background: rgba(234,101,0,0.09);  color: var(--orange); border-color: rgba(234,101,0,0.35); }
+  [data-theme="light"] .badge-due  { background: rgba(220,38,38,0.09);  color: var(--red);    border-color: rgba(220,38,38,0.35); }
+  [data-theme="light"] .btn-confirm { background: rgba(74,108,247,0.08); border-color: var(--blue-bright); color: var(--blue-bright); }
+  [data-theme="light"] .btn-confirm:hover { background: rgba(74,108,247,0.18); }
+  [data-theme="light"] .import-step.active { color: var(--blue-bright); border-bottom-color: var(--blue-bright); }
+  [data-theme="light"] .import-table tr:nth-child(even) { background: rgba(74,108,247,.03); }
+  [data-theme="light"] .board-meca, [data-theme="light"] .board-cal { color-scheme: light; }
+  [data-theme="light"] input[type="date"].input-num { color-scheme: light; }
+  [data-theme="light"] .cougar-select { color: var(--gold); background: var(--input-bg); border-color: var(--border); }
+  [data-theme="light"] .hcell-label { color: var(--text); }
+  [data-theme="light"] .section-label { color: var(--text-dim); }
+  [data-theme="light"] .theme-btn { background: var(--card); border-color: var(--border); color: var(--text-mid); }
+  [data-theme="light"] .theme-btn:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
+
 </style>
+<script>
+  // Apply saved theme immediately to avoid flash of unstyled content
+  (function(){
+    var t = localStorage.getItem('cougar_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 </head>
 <body>
 
@@ -510,7 +772,9 @@
     <div class="header-title">Cougar</div>
     <div class="header-sub">SUIVI ENTRETIENS</div>
   </div>
-  <div class="version-badge">V1.0</div>
+  <button id="themeBtn" onclick="toggleTheme()" title="Basculer thème clair / sombre"
+    style="position:absolute;top:8px;right:56px;z-index:2;width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--text-mid);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;padding:0;line-height:1;">🌙</button>
+  <div class="version-badge">V1.1</div>
 </div>
 
 <button onclick="printFrise()" class="btn-print-float" title="Imprimer / exporter PDF">🖨</button>
@@ -529,6 +793,7 @@
       <div class="cougar-label">COUGAR</div>
       <select class="cougar-select" id="cougarSelect" onchange="onCougarChange()"></select>
       <button class="btn-add-cougar" onclick="openAddCougar()">+ Ajouter</button>
+      <button class="btn-del-cougar" id="btnDelCougar" onclick="deleteCougar()" title="Supprimer cet appareil" aria-label="Supprimer cet appareil">🗑<span class="lbl"> Supprimer</span></button>
     </div>
 
     <!-- H CELLULE -->
@@ -541,9 +806,13 @@
     <!-- ENTRETIENS -->
     <div class="entretiens-header">
       <div class="entretiens-title">Entretiens</div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-import-pdf" onclick="openImportPDF()" title="Importer depuis Annexe IV (PDF ou Excel)">📂 Import</button>
+        <button class="btn-export" onclick="exportEntretiensHTML()" title="Exporter les entretiens de cet appareil en fichier HTML">💾 Exporter</button>
         <button class="btn-add" onclick="addEntretien('meca')">＋ Méca</button>
         <button class="btn-add-cal" onclick="addEntretien('cal')">📅 Cal</button>
+        <button class="btn-clear-all" title="Effacer tous les entretiens de cet appareil"
+          onclick="if(confirm('Effacer tous les entretiens de ce Cougar ?')){const ac=getActive();if(ac){ac.entretiens=[];saveState();renderAll();}}">✕ Tout effacer</button>
       </div>
     </div>
 
@@ -553,7 +822,23 @@
 
   <!-- ===================== ONGLET 2 ===================== -->
   <div class="pane" id="pane1">
-    <div class="section-label">Frise chronologique — H Cellule</div>
+    <div class="frise-head">
+      <div class="section-label" style="margin-bottom:0;">Frise chronologique — H Cellule</div>
+      <div class="frise-ctls">
+        <div class="frise-ctl-grp">
+          <span class="frise-ctl-lbl">ZOOM</span>
+          <button class="frise-btn" onclick="setFriseZoom(-1)" title="Dézoomer">−</button>
+          <button class="frise-btn" onclick="setFriseZoom(1)" title="Zoomer">+</button>
+          <button class="frise-btn frise-btn-txt" onclick="friseZoom=1.0;renderFrise();" title="Réinitialiser le zoom">AUTO</button>
+        </div>
+        <div class="frise-ctl-grp">
+          <span class="frise-ctl-lbl">COLONNE</span>
+          <button class="frise-btn" onclick="setFriseLeftW(-1)" title="Rétrécir la colonne des entretiens">−</button>
+          <button class="frise-btn" onclick="setFriseLeftW(1)" title="Élargir la colonne des entretiens">+</button>
+          <button class="frise-btn frise-btn-txt" onclick="fitFriseLeftW()" title="Ajuster la largeur au nom le plus long">AJUSTER</button>
+        </div>
+      </div>
+    </div>
     <div class="chart-container">
       <div class="chart-inner" id="friseContainer"></div>
     </div>
@@ -561,6 +846,63 @@
       <div class="legend-item"><div class="legend-dot" style="background:#34D399"></div>OK</div>
       <div class="legend-item"><div class="legend-dot" style="background:#F0C040"></div>Bientôt (tolérance)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#EF4444"></div>Dépassé</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL Import Annexe IV (PDF / Excel) -->
+<div class="modal-bg" id="modalImport">
+  <div class="modal modal-import">
+    <div class="import-steps">
+      <div class="import-step active" id="istep1">1 · Détection</div>
+      <div class="import-step" id="istep2">2 · Révision</div>
+    </div>
+
+    <!-- Step 1 -->
+    <div id="importStep1">
+      <h3 style="margin-bottom:12px;">Importer depuis Annexe IV</h3>
+      <div class="import-drop" id="importDrop"
+        ondragover="event.preventDefault()" ondrop="onPDFDrop(event)"
+        onclick="document.getElementById('pdfFileInput').click()">
+        <div style="font-size:28px;margin-bottom:6px;">📂</div>
+        <div>Cliquer pour sélectionner une Annexe IV (PDF ou Excel)</div>
+        <div class="drop-hint">ou glisser-déposer ici</div>
+      </div>
+      <input type="file" id="pdfFileInput" accept=".pdf,.xlsx,.xlsm,.xls" style="display:none"
+        onchange="onPDFSelected(this.files[0])">
+      <div id="importSpinner" class="import-spinner" style="display:none">⏳ Lecture en cours…</div>
+      <div id="importDetect" style="display:none">
+        <div class="detect-grid">
+          <span class="detect-label">Appareil</span>
+          <span class="detect-val" id="detectMachine">—</span>
+          <span class="detect-label">H Cellule fichier</span>
+          <span class="detect-val" id="detectHCell">—</span>
+          <span class="detect-label">Visibilité sur</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <input type="number" id="importHorizon" value="100" min="1" step="5"
+              class="input-num" style="width:72px"> h
+            <span style="font-size:12px;color:var(--text-dim);">au-delà de la H cellule PDF</span>
+          </span>
+          <span class="detect-label">Visibilité jusqu'à</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <input type="date" id="importDateMax" class="input-num" style="width:160px;color-scheme:dark;">
+            <span style="font-size:12px;color:var(--text-dim);">pour les calendaires</span>
+          </span>
+        </div>
+      </div>
+      <div id="importParseError" class="import-error" style="display:none"></div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="importStep2" style="display:none">
+      <h3 style="margin-bottom:8px;" id="importStep2Title">Révision</h3>
+      <div id="importTableContainer"></div>
+    </div>
+
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="btn-cancel" onclick="closeModal('modalImport')">Annuler</button>
+      <button class="btn-confirm" id="importNextBtn" style="display:none" onclick="importGoToStep2()">Suivant →</button>
+      <button class="btn-confirm" id="importConfirmBtn" style="display:none" onclick="confirmImport()">✅ Importer</button>
     </div>
   </div>
 </div>
@@ -632,6 +974,18 @@ function confirmAddCougar() {
   renderAll();
 }
 
+function deleteCougar() {
+  const ac = getActive();
+  if (!ac) { alert('Aucun appareil à supprimer.'); return; }
+  const n = (ac.entretiens || []).length;
+  const msg = `Supprimer le Cougar n°${ac.sn} et ${n === 0 ? 'ses données' : (n === 1 ? 'son entretien' : 'ses ' + n + ' entretiens')} ?\n\nCette action est définitive.`;
+  if (!confirm(msg)) return;
+  state.cougars = state.cougars.filter(c => c.sn !== ac.sn);
+  state.activeSN = state.cougars.length ? state.cougars[0].sn : null;
+  saveState();
+  renderAll();
+}
+
 // ===================== ENTRETIENS =====================
 function addEntretien(type = 'meca') {
   const ac = getActive();
@@ -688,8 +1042,20 @@ function getStatus(entretien, hCellule) {
   const hC  = parseFloat(hCellule) || 0;
   if (isNaN(hE)) return null;
   if (hC > hE + tol) return { type: 'due',  text: 'DÉPASSÉ',      delta: hE - hC };
-  if (hC >= hE)      return { type: 'soon', text: 'EN TOLÉRANCE', delta: hE - hC };
+  if (hC >= hE)      return { type: 'soon', text: (hE - hC >= 0 ? '+' : '') + (hE - hC).toFixed(1) + 'h', delta: hE - hC };
   return { type: 'ok', text: 'OK', delta: hE - hC };
+}
+
+function getStatusDual(e, hCellule) {
+  // Returns the worst (most urgent) of the two criteria
+  const mecaSt = getStatus({ hCellule: e.hCellule, tolerance: e.tolerance }, hCellule);
+  const calSt  = e.dateEcheance ? getStatusCal({ dateEcheance: e.dateEcheance, toleranceDays: e.toleranceDays }) : null;
+  if (!mecaSt && !calSt) return null;
+  if (!calSt) return { ...mecaSt, criterion: 'heures' };
+  if (!mecaSt) return { ...calSt, criterion: 'date' };
+  const rank = { due: 3, soon: 2, ok: 1 };
+  if (rank[mecaSt.type] >= rank[calSt.type]) return { ...mecaSt, criterion: 'heures' };
+  return { ...calSt, criterion: 'date' };
 }
 
 function getStatusCal(entretien) {
@@ -703,7 +1069,7 @@ function getStatusCal(entretien) {
   // DÉPASSÉ  : today > fin de tolérance
   if (today > echTol)  return { type: 'due',  text: 'DÉPASSÉ', diffJ, diffJTol };
   // BIENTÔT  : moins de 7j avant l'échéance (inclut la période de tolérance)
-  if (diffJ <= 7)      return { type: 'soon', text: 'BIENTÔT', diffJ, diffJTol };
+  if (diffJ <= 7)      return { type: 'soon', text: (diffJ >= 0 ? '+' : '') + diffJ + 'j', diffJ, diffJTol };
   // OK       : plus de 7j avant l'échéance
   return               { type: 'ok',   text: 'OK',      diffJ, diffJTol };
 }
@@ -716,7 +1082,14 @@ function refreshBadge(id) {
   const footer = document.querySelector(`[data-id="${id}"] .entretien-footer`);
   if (!footer) return;
   const cls = s => ({ ok:'badge-ok', soon:'badge-soon', due:'badge-due' }[s.type]);
-  if (e.type === 'cal') {
+  if (e.type === 'dual') {
+    const s = getStatusDual(e, ac.hCellule || 0);
+    if (!s) { footer.innerHTML = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`; return; }
+    const info = s.criterion === 'date'
+      ? `${s.diffJ >= 0 ? '+' : ''}${s.diffJ}j (date)`
+      : `${s.delta >= 0 ? '+' : ''}${s.delta.toFixed(1)}h (heures)`;
+    footer.innerHTML = `<span class="badge ${cls(s)}">${s.text}</span><span class="badge-delta">${info}</span>`;
+  } else if (e.type === 'cal') {
     const s = getStatusCal(e);
     if (!s) { footer.innerHTML = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`; return; }
     const sign = s.diffJ >= 0 ? '+' : '';
@@ -735,6 +1108,8 @@ function refreshBadge(id) {
 function renderCougarSelect() {
   const sel = document.getElementById('cougarSelect');
   sel.innerHTML = '';
+  const delBtn = document.getElementById('btnDelCougar');
+  if (delBtn) delBtn.disabled = state.cougars.length === 0;
   if (state.cougars.length === 0) {
     sel.innerHTML = '<option value="">— Aucun —</option>';
     return;
@@ -753,6 +1128,7 @@ function renderEntretiens() {
   const list = document.getElementById('entretiensList');
   if (!ac) {
     list.innerHTML = '<div class="empty-state">Aucun appareil sélectionné.</div>';
+    document.getElementById('hCellule').value = '';
     return;
   }
   document.getElementById('hCellule').value = ac.hCellule !== undefined ? ac.hCellule : '';
@@ -763,11 +1139,23 @@ function renderEntretiens() {
   }
 
   list.innerHTML = ac.entretiens.map((e, i) => {
-    const isCal = e.type === 'cal';
+    const isCal  = e.type === 'cal';
+    const isDual = e.type === 'dual';
 
     // ── Badge footer ──
     let badgeHtml;
-    if (isCal) {
+    if (isDual) {
+      const s = getStatusDual(e, ac.hCellule || 0);
+      if (!s) {
+        badgeHtml = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`;
+      } else {
+        const cls = { ok:'badge-ok', soon:'badge-soon', due:'badge-due' }[s.type];
+        const info = s.criterion === 'date'
+          ? `${s.diffJ >= 0 ? '+' : ''}${s.diffJ}j (date)`
+          : `${s.delta >= 0 ? '+' : ''}${s.delta.toFixed(1)}h (heures)`;
+        badgeHtml = `<span class="badge ${cls}">${s.text}</span><span class="badge-delta">${info}</span>`;
+      }
+    } else if (isCal) {
       const s = getStatusCal(e);
       if (!s) {
         badgeHtml = `<span class="badge badge-na">—</span><span class="badge-delta"></span>`;
@@ -789,7 +1177,42 @@ function renderEntretiens() {
     }
 
     // ── Corps de la card ──
-    const bodyHtml = isCal ? `
+    let bodyHtml;
+    if (isDual) {
+      bodyHtml = `
+      <div class="field-group">
+        <div class="field-label">H Éch.</div>
+        <div class="field-row">
+          <input class="input-num" type="number" value="${e.hCellule||''}" min="0" step="0.1" placeholder="—"
+            oninput="updateEntretien(${e.id},'hCellule',this.value)">
+          <span class="field-unit">h</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Tol. H</div>
+        <div class="field-row">
+          <input class="input-num" type="number" value="${e.tolerance||''}" min="0" step="0.1" placeholder="—"
+            oninput="updateEntretien(${e.id},'tolerance',this.value)">
+          <span class="field-unit">h</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Date éch.</div>
+        <div class="field-row">
+          <input class="input-num" type="date" value="${e.dateEcheance||''}"
+            oninput="updateEntretien(${e.id},'dateEcheance',this.value)">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Tol. J</div>
+        <div class="field-row">
+          <input class="input-num" type="number" value="${e.toleranceDays||''}" min="0" step="1" placeholder="—"
+            oninput="updateEntretien(${e.id},'toleranceDays',this.value)">
+          <span class="field-unit">j</span>
+        </div>
+      </div>`;
+    } else if (isCal) {
+      bodyHtml = `
       <div class="field-group">
         <div class="field-label">Date d'échéance</div>
         <div class="field-row">
@@ -804,7 +1227,9 @@ function renderEntretiens() {
             oninput="updateEntretien(${e.id},'toleranceDays',this.value)">
           <span class="field-unit">jours</span>
         </div>
-      </div>` : `
+      </div>`;
+    } else {
+      bodyHtml = `
       <div class="field-group">
         <div class="field-label">H Cellule</div>
         <div class="field-row">
@@ -821,31 +1246,152 @@ function renderEntretiens() {
           <span class="field-unit">h</span>
         </div>
       </div>`;
+    }
+
+    // TW field (temps d'indisponibilité) — common to all types, spans full width in dual grid
+    bodyHtml += `
+      <div class="field-group" style="grid-column:1/-1;">
+        <div class="field-label">Indispo TW</div>
+        <div class="field-row">
+          <input class="input-num" type="text" value="${escHtml(e.tw||'')}" placeholder="—"
+            style="width:72px;" title="Temps d'indisponibilité ex: 2h30, 45min"
+            oninput="updateEntretien(${e.id},'tw',this.value)">
+          <span class="field-unit" style="font-size:11px;opacity:.7;">de TW</span>
+        </div>
+      </div>`;
+
+    const typeCls  = isDual ? 'type-badge-dual' : isCal ? 'type-badge-cal' : 'type-badge-meca';
+    const typeLbl  = isDual ? '⚡ DUAL' : isCal ? '📅 CAL' : '⚙ MÉCA';
+    const bodyCls  = isDual ? ' dual' : '';
 
     return `
     <div class="entretien-card" data-id="${e.id}">
       <div class="entretien-top">
-        <span class="${isCal ? 'type-badge-cal' : 'type-badge-meca'}">${isCal ? '📅 CAL' : '⚙ MÉCA'}</span>
-        <input class="input-name" value="${escHtml(e.nom)}" placeholder="Nom de l'entretien"
-          oninput="updateEntretien(${e.id},'nom',this.value)">
+        <span class="${typeCls}">${typeLbl}</span>
+        <div class="entretien-names">
+          <input class="input-name" value="${escHtml(e.nom)}" placeholder="Opération"
+            oninput="updateEntretien(${e.id},'nom',this.value)">
+          <input class="input-desig" value="${escHtml(e.desig||'')}" placeholder="Désignation / Ensemble"
+            oninput="updateEntretien(${e.id},'desig',this.value)">
+        </div>
         <button class="btn-del" onclick="deleteEntretien(${e.id})" title="Supprimer">✕</button>
       </div>
-      <div class="entretien-body">${bodyHtml}</div>
+      <div class="entretien-body${bodyCls}">${bodyHtml}</div>
       <div class="entretien-footer">${badgeHtml}</div>
     </div>`;
   }).join('');
 }
 
+// ─── THEME TOGGLE ────────────────────────────────────────────────
+// Helper: read a CSS custom property from :root (resolves light/dark via data-theme)
+function tv(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const newTheme = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = newTheme === 'light' ? '🌙' : '☀️';
+  localStorage.setItem('cougar_theme', newTheme);
+  renderAll();
+}
+
+function initThemeBtn() {
+  const btn = document.getElementById('themeBtn');
+  if (!btn) return;
+  const t = document.documentElement.getAttribute('data-theme') || 'dark';
+  btn.textContent = t === 'light' ? '🌙' : '☀️';
+}
+
 // ===================== FRISE =====================
 const ENT_PALETTE = ['#6FA8E8','#F0C040','#B06EE8','#34D399','#F97316','#F05050','#50C8C8','#A0C040'];
+let friseZoom = 1.0; // zoom multiplier for the meca chart (1.0 = auto-fit)
+function setFriseZoom(delta) {
+  friseZoom = Math.max(0.25, Math.min(8, friseZoom * (delta > 0 ? 1.4 : 1/1.4)));
+  renderFrise();
+}
+
+// ── Largeur de la colonne « Entretien » (px) : réglable (− / + / AJUSTER / glisser), mémorisée ──
+const FRISE_LW_DEFAULT = 152, FRISE_LW_MIN = 112, FRISE_LW_STEP = 28;
+let friseLeftW = (() => {
+  try {
+    const v = parseInt(localStorage.getItem('cougar_frise_lw'), 10);
+    return v >= FRISE_LW_MIN && v <= 2000 ? v : FRISE_LW_DEFAULT;
+  } catch (_) { return FRISE_LW_DEFAULT; }
+})();
+// Jamais plus large que le cadre moins ~100 px, pour qu'il reste de la place pour la frise elle-même
+function friseLeftWMax() {
+  const c = document.getElementById('friseContainer');
+  return Math.max(FRISE_LW_MIN, ((c && c.clientWidth) || 640) - 100);
+}
+function clampFriseLeftW(w) { return Math.round(Math.max(FRISE_LW_MIN, Math.min(friseLeftWMax(), w))); }
+function setFriseLeftWValue(w) {
+  friseLeftW = clampFriseLeftW(w);
+  try { localStorage.setItem('cougar_frise_lw', String(friseLeftW)); } catch (_) {}
+  renderFrise();
+}
+function setFriseLeftW(dir) { setFriseLeftWValue(clampFriseLeftW(friseLeftW) + dir * FRISE_LW_STEP); }
+// AJUSTER : largeur du nom d'opération / d'ensemble le plus long (mesuré avec la police de la frise)
+function fitFriseLeftW() {
+  const ac = getActive();
+  if (!ac || !ac.entretiens.length) return;
+  const ctx = document.createElement('canvas').getContext('2d');
+  const fam = tv('--font-display') || 'sans-serif';
+  let w = 0;
+  ac.entretiens.forEach(e => {
+    ctx.font = `400 14px ${fam}`;
+    w = Math.max(w, ctx.measureText(e.nom || '').width);
+    if (e.desig) { ctx.font = `400 11px ${fam}`; w = Math.max(w, ctx.measureText(e.desig).width); }
+  });
+  setFriseLeftWValue(Math.ceil(w) + 14 + 12 + 8);   // + marges internes de la cellule + 8 px de sécurité
+}
+// Glisser la poignée (bord droit de l'en-tête « Entretien ») : aperçu en direct via --lw, rendu final au relâchement
+function startFriseResize(ev) {
+  ev.preventDefault();
+  const grip   = ev.currentTarget;
+  const boards = document.querySelectorAll('#friseContainer .board-meca, #friseContainer .board-cal');
+  const x0 = ev.clientX, w0 = clampFriseLeftW(friseLeftW);
+  let w = w0;
+  try { grip.setPointerCapture(ev.pointerId); } catch (_) {}
+  const move = e => {
+    w = clampFriseLeftW(w0 + e.clientX - x0);
+    boards.forEach(b => b.style.setProperty('--lw', w + 'px'));
+  };
+  const up = () => {
+    grip.removeEventListener('pointermove', move);
+    grip.removeEventListener('pointerup', up);
+    grip.removeEventListener('pointercancel', up);
+    if (w !== w0) setFriseLeftWValue(w);
+  };
+  grip.addEventListener('pointermove', move);
+  grip.addEventListener('pointerup', up);
+  grip.addEventListener('pointercancel', up);
+}
 
 function renderFrise() {
+  // ── Theme-aware colors (read CSS vars at render time) ──
+  const fBg    = tv('--frise-bg');
+  const fBg2   = tv('--frise-bg2');
+  const fBg3   = tv('--frise-bg3');
+  const fBord  = tv('--frise-bord');
+  const fTick  = tv('--frise-tick');
+  const fDim   = tv('--frise-dim');
+  const fNowC  = tv('--frise-now-c');
+  const fNowBg = tv('--frise-now-bg');
+  const fGridS = tv('--frise-grid-s');
+  const fGridL = tv('--frise-grid-l');
+  const fCalHdr= tv('--frise-cal-hdr');
+  const fCalFtr= tv('--frise-cal-ftr');
+  const fCalGl = tv('--frise-cal-gl');
+  const fTwBg  = tv('--frise-tw-bg');
+  const fFont  = tv('--font-display') || "'Barlow Condensed',sans-serif";
+
   const ac = getActive();
   const container = document.getElementById('friseContainer');
   if (!ac || ac.entretiens.length === 0) {
     container.innerHTML = '<div class="empty-state">Aucun entretien.</div>'; return;
   }
-  const validMeca = ac.entretiens.filter(e => e.type !== 'cal' && !isNaN(parseFloat(e.hCellule)));
+  const validMeca = ac.entretiens.filter(e => (e.type === 'meca' || e.type === 'dual') && !isNaN(parseFloat(e.hCellule)));
   const validCal  = ac.entretiens.filter(e => e.type === 'cal');
   if (validMeca.length === 0 && validCal.length === 0) {
     container.innerHTML = '<div class="empty-state">Aucune donnée.</div>'; return;
@@ -853,7 +1399,19 @@ function renderFrise() {
   const hNow = parseFloat(ac.hCellule) || 0;
   const entColor = e => ENT_PALETTE[ac.entretiens.findIndex(x => x.id === e.id) % ENT_PALETTE.length];
 
-  const LEFT_W = 152, PAD_L = 24, PAD_R = 32, ROW_H = 52, HDR_H = 34, FTR_H = 28;
+  const LEFT_W = clampFriseLeftW(friseLeftW);   // largeur de la colonne « Entretien » (px)
+  const LW = 'var(--lw)';                        // … en CSS : --lw est posée sur chaque tableau (aperçu en direct du glissement)
+  const PAD_L = 24, PAD_R = 32, ROW_H = 64, HDR_H = 34, FTR_H = 28;
+
+  // Poignée de largeur (masquée à l'impression)
+  const GRIP = `<div class="lw-grip" onpointerdown="startFriseResize(event)" title="Glisser pour ajuster la largeur de la colonne" style="position:absolute;top:0;bottom:0;right:-6px;width:12px;cursor:col-resize;touch-action:none;z-index:12;"><div style="position:absolute;left:5px;top:22%;bottom:22%;width:2px;border-radius:2px;background:${fTick};opacity:.55;"></div></div>`;
+
+  // Cellule de gauche (collante) : opération · ensemble (désignation) · statut
+  const labelCell = (e, c, subLine, borderR, borderB) => `<div style="width:${LW};flex-shrink:0;position:sticky;left:0;z-index:10;background:${fBg};border-right:2px solid ${borderR};border-bottom:1px solid ${borderB};display:flex;flex-direction:column;justify-content:center;padding:0 12px 0 14px;gap:2px;">
+          <div title="${escHtml(e.nom)}" style="font-family:${fFont};font-size:14px;font-weight:400;color:${c};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.nom)}</div>${e.desig ? `
+          <div title="${escHtml(e.desig)}" style="font-family:${fFont};font-size:11px;font-weight:400;color:${fTick};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.desig)}</div>` : ''}
+          ${subLine}
+        </div>`;
 
   // ── BOARD MÉCA ──────────────────────────────────────
   let mecaHTML = '';
@@ -862,7 +1420,8 @@ function renderFrise() {
     const domainMin = Math.max(0, hNow - 1);
     const domainMax = Math.max(...allHmax) + 5;
     const range     = Math.max(domainMax - domainMin, 1);
-    const px1h      = Math.max((580 - PAD_L - PAD_R) / range, 8);
+    const availPx   = Math.max((container.clientWidth || 640) - LEFT_W - PAD_L - PAD_R, 320);
+    const px1h      = Math.max(availPx / range, 8) * friseZoom;
     const trackW    = Math.ceil(range * px1h) + PAD_L + PAD_R;
     const toX       = h => (h - domainMin) * px1h + PAD_L;
 
@@ -872,17 +1431,17 @@ function renderFrise() {
     const bgPos5     = (toX(firstTick5) % px5h).toFixed(2);
     const firstTick1 = Math.ceil(domainMin);
     const bgPos1     = (toX(firstTick1) % px1h).toFixed(2);
-    const gridBg     = `background:#0D1F45;background-image:linear-gradient(90deg,rgba(255,255,255,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:${px5h.toFixed(2)}px 100%,${px1h.toFixed(2)}px 100%;background-position:${bgPos5}px 0,${bgPos1}px 0;`;
+    const gridBg     = `background:${fBg};background-image:linear-gradient(90deg,${fGridS} 1px,transparent 1px),linear-gradient(90deg,${fGridL} 1px,transparent 1px);background-size:${px5h.toFixed(2)}px 100%,${px1h.toFixed(2)}px 100%;background-position:calc(${LW} + ${bgPos5}px) 0,calc(${LW} + ${bgPos1}px) 0;`;
 
     // Ticks labels
     let ticks = '';
     for (let t = Math.ceil(domainMin); t <= domainMax + 0.1; t++) {
       if (t % 5 !== 0) continue;
       const x = toX(t);
-      ticks += `<div style="position:absolute;left:${x.toFixed(1)}px;top:6px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;color:#94A3B8;white-space:nowrap;">${t.toFixed(1)}</div>`;
+      ticks += `<div style="position:absolute;left:${x.toFixed(1)}px;top:6px;transform:translateX(-50%);font-family:${fFont};font-size:11px;font-weight:600;color:${fTick};white-space:nowrap;">${t.toFixed(1)}</div>`;
     }
     const xNow = toX(hNow);
-    const nowLbl = `<div style="position:absolute;left:${xNow.toFixed(1)}px;top:3px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:#3B82F6;background:#112354;padding:1px 5px;border-radius:3px;border:1px solid #3B82F6;white-space:nowrap;z-index:5;">▼ ${hNow.toFixed(1)}h</div>`;
+    const nowLbl = `<div style="position:absolute;left:${xNow.toFixed(1)}px;top:3px;transform:translateX(-50%);font-family:${fFont};font-size:10px;font-weight:700;color:${fNowC};background:${fNowBg};padding:1px 5px;border-radius:3px;border:1px solid ${fNowC};white-space:nowrap;z-index:5;">▼ ${hNow.toFixed(1)}h</div>`;
 
     // Lignes entretiens
     const gridH = validMeca.length * ROW_H;
@@ -890,55 +1449,64 @@ function renderFrise() {
     validMeca.forEach(e => {
       const hV = parseFloat(e.hCellule), tol = parseFloat(e.tolerance)||0, hE = hV+tol;
       const x1 = toX(hV), x2 = toX(hE), c = entColor(e);
-      const st = getStatus(e, hNow);
+      const st = (e.type === 'dual') ? getStatusDual(e, hNow) : getStatus(e, hNow);
       const stT = st ? ({ok:'OK',soon:'TOLÉRANCE',due:'DÉPASSÉ'}[st.type]) : '—';
       const stC = st ? ({ok:'#34D399',soon:'#F97316',due:'#EF4444'}[st.type]) : '#4A6080';
+      const dualDate = (e.type === 'dual' && e.dateEcheance)
+        ? e.dateEcheance.split('-').reverse().join('/') : null;
       const fmt = d => (d>=0?'+':'')+d.toFixed(1);
-      const BT=16, BH=ROW_H-32;
+      const BH=20, BT=(ROW_H-BH)/2;
       let bar = '';
       bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;top:${BT-6}px;width:3px;height:${BH+12}px;background:${c};border-radius:2px;z-index:3;box-shadow:0 0 8px ${c}88;"></div>`;
-      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:${c};white-space:nowrap;z-index:4;">${hV.toFixed(1)}h</div>`;
-      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${c}BB;white-space:nowrap;z-index:4;">${fmt(hV-hNow)}</div>`;
+      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:${fFont};font-size:13px;font-weight:600;color:${c};white-space:nowrap;z-index:4;">${hV.toFixed(1)}h</div>`;
+      bar += `<div style="position:absolute;left:${x1.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:${fFont};font-size:11px;color:${c}BB;white-space:nowrap;z-index:4;">${fmt(hV-hNow)}</div>`;
       if (tol > 0) {
         bar += `<div style="position:absolute;left:${(x1+3).toFixed(1)}px;top:${BT}px;width:${Math.max(x2-x1-3,2).toFixed(1)}px;height:${BH}px;background:repeating-linear-gradient(-45deg,${c}28 0,${c}28 4px,${c}0c 4px,${c}0c 10px);border-top:1px solid ${c}55;border-bottom:1px solid ${c}55;border-right:2px dashed ${c}70;z-index:1;"></div>`;
         bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;top:${BT-4}px;width:2px;height:${BH+8}px;background:${c}88;z-index:3;"></div>`;
-        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;color:${c}CC;white-space:nowrap;z-index:4;">${hE.toFixed(1)}h</div>`;
-        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${c}BB;white-space:nowrap;z-index:4;">${fmt(hE-hNow)}</div>`;
+        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:${fFont};font-size:13px;color:${c}CC;white-space:nowrap;z-index:4;">${hE.toFixed(1)}h</div>`;
+        bar += `<div style="position:absolute;left:${x2.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:${fFont};font-size:11px;color:${c}BB;white-space:nowrap;z-index:4;">${fmt(hE-hNow)}</div>`;
+      }
+      // TW label — displayed to the right of the echeance marker
+      const twTxt = (e.tw||'').trim();
+      if (twTxt) {
+        const xTW = (tol > 0 ? x2 : x1) + 10;
+        const yTW = BT + Math.floor(BH / 2) - 7;
+        bar += `<div style="position:absolute;left:${xTW.toFixed(1)}px;top:${yTW}px;font-family:${fFont};font-size:11px;font-weight:600;color:${c}CC;white-space:nowrap;z-index:4;background:${fTwBg};padding:1px 5px;border-radius:3px;border:1px solid ${c}44;">${escHtml(twTxt)} de TW</div>`;
       }
       // Left label (sticky) + right track
+      const subLine = dualDate
+        ? `<div style="font-size:9px;color:#7C3AED;white-space:nowrap;">⚡ aussi ${dualDate}</div>`
+        : `<div style="font-size:10px;font-weight:700;color:${stC};">${stT}</div>`;
       rows += `<div style="display:flex;height:${ROW_H}px;">
-        <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:10;background:#0D1F45;border-right:2px solid #1E3A6E;border-bottom:1px solid #1E3A6E;display:flex;flex-direction:column;justify-content:center;padding:0 12px 0 14px;gap:3px;">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:${c};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.nom)}</div>
-          <div style="font-size:10px;font-weight:700;color:${stC};">${stT}</div>
-        </div>
-        <div style="position:relative;height:${ROW_H}px;flex:1;border-bottom:1px solid #1E3A6E;overflow-x:clip;overflow-y:visible;">${bar}</div>
+        ${labelCell(e, c, subLine, fBord, fBord)}
+        <div style="position:relative;height:${ROW_H}px;flex:1;border-bottom:1px solid ${fBord};overflow-x:clip;overflow-y:visible;">${bar}</div>
       </div>`;
     });
 
     mecaHTML = `
-      <div class="board-meca" style="overflow-x:auto;border-radius:10px;border:1px solid #1E3A6E;box-shadow:0 4px 16px rgba(0,0,0,0.35);">
-        <div style="position:relative;width:${LEFT_W + trackW}px;">
+      <div class="board-meca" style="--lw:${LEFT_W}px;overflow-x:auto;border-radius:10px;border:1px solid ${fBord};box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+        <div style="position:relative;width:calc(${LW} + ${trackW}px);">
           <!-- En-tête -->
-          <div style="display:flex;position:sticky;top:0;z-index:8;background:#112354;border-bottom:2px solid #1E3A6E;height:${HDR_H}px;">
-            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:9;background:#112354;border-right:2px solid #1E3A6E;display:flex;align-items:center;padding:0 12px;">
-              <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#4A6080;letter-spacing:.1em;text-transform:uppercase;">Entretien</span>
+          <div style="display:flex;position:sticky;top:0;z-index:8;background:${fBg2};border-bottom:2px solid ${fBord};height:${HDR_H}px;">
+            <div style="width:${LW};flex-shrink:0;position:sticky;left:0;z-index:9;background:${fBg2};border-right:2px solid ${fBord};display:flex;align-items:center;padding:0 12px;">
+              <span style="font-family:${fFont};font-size:11px;font-weight:700;color:${fDim};letter-spacing:.1em;text-transform:uppercase;">Entretien</span>${GRIP}
             </div>
             <div style="flex:1;position:relative;overflow:visible;">${ticks}${nowLbl}</div>
           </div>
           <!-- Lignes avec grille CSS -->
           <div style="position:relative;${gridBg}">
             <!-- Marqueur position actuelle (toute la hauteur des lignes) -->
-            <div style="position:absolute;left:${(LEFT_W+xNow).toFixed(1)}px;top:0;width:2px;height:100%;background:linear-gradient(to bottom,#3B82F6,#3B82F666);z-index:2;pointer-events:none;"></div>
+            <div style="position:absolute;left:calc(${LW} + ${xNow.toFixed(1)}px);top:0;width:2px;height:100%;background:linear-gradient(to bottom,${fNowC},${fNowC}66);z-index:2;pointer-events:none;"></div>
             ${rows}
           </div>
           <!-- Pied -->
-          <div style="display:flex;border-top:2px solid #1E3A6E;height:${FTR_H}px;background:#0F2248;">
-            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;background:#0F2248;border-right:2px solid #1E3A6E;z-index:3;"></div>
+          <div style="display:flex;border-top:2px solid ${fBord};height:${FTR_H}px;background:${fBg3};">
+            <div style="width:${LW};flex-shrink:0;position:sticky;left:0;background:${fBg3};border-right:2px solid ${fBord};z-index:3;"></div>
             <div style="flex:1;position:relative;overflow:visible;">${ticks}</div>
           </div>
         </div>
       </div>
-      <div style="margin-top:6px;text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:9px;color:#4A6080;letter-spacing:1px;">heures cellule →</div>`;
+      <div style="margin-top:6px;text-align:right;font-family:${fFont};font-size:9px;color:${fDim};letter-spacing:1px;">heures cellule →</div>`;
   }
 
   // ── BOARD CALENDAIRE ─────────────────────────────────
@@ -950,22 +1518,23 @@ function renderFrise() {
     const cMin  = today.getTime() - MS;
     const cMax  = (ends.length?Math.max(...ends):today.getTime()) + 5*MS;
     const cRange= (cMax-cMin)/MS || 1;
-    const px_d  = Math.max(580/cRange, 12);
+    const availPxCal = Math.max((container.clientWidth || 640) - LEFT_W - PAD_L - PAD_R, 320);
+    const px_d  = Math.max(availPxCal/cRange, 12);
     const cW    = Math.ceil(cRange*px_d) + PAD_L + PAD_R;
     const toD   = ts => ((ts-cMin)/MS)*px_d + PAD_L;
-    const CAL_H = 52, CAL_HDR = 30, CAL_FTR = 26;
+    const CAL_H = 64, CAL_HDR = 30, CAL_FTR = 26;
     const xTod  = toD(today.getTime());
 
     // Grille jours via CSS background
     const bgPosCal = (toD(cMin + MS) % px_d).toFixed(2);
-    const gridBgCal= `background:#0D1F45;background-image:linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);background-size:${px_d.toFixed(2)}px 100%;background-position:${bgPosCal}px 0;`;
+    const gridBgCal= `background:${fBg};background-image:linear-gradient(90deg,${fCalGl} 1px,transparent 1px);background-size:${px_d.toFixed(2)}px 100%;background-position:calc(${LW} + ${bgPosCal}px) 0;`;
 
     let calTicks = '';
     for (let i=0;i<=Math.ceil(cRange)+1;i++) {
       const d=new Date(cMin+i*MS), x=toD(d.getTime()), isT=d.toDateString()===today.toDateString();
-      if(i%3===0||isT) calTicks+=`<div style="position:absolute;left:${x.toFixed(1)}px;top:6px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:${isT?700:600};color:${isT?'#3B82F6':'#94A3B8'};white-space:nowrap;">${isT?'Auj.':d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
+      if(i%3===0||isT) calTicks+=`<div style="position:absolute;left:${x.toFixed(1)}px;top:6px;transform:translateX(-50%);font-family:${fFont};font-size:10px;font-weight:${isT?700:600};color:${isT?fNowC:fTick};white-space:nowrap;">${isT?'Auj.':d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
     }
-    const todayLbl=`<div style="position:absolute;left:${xTod.toFixed(1)}px;top:3px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:#3B82F6;background:#1a120a;padding:1px 5px;border-radius:3px;border:1px solid #3B82F6;white-space:nowrap;z-index:5;">▼ Auj.</div>`;
+    const todayLbl=`<div style="position:absolute;left:${xTod.toFixed(1)}px;top:3px;transform:translateX(-50%);font-family:${fFont};font-size:10px;font-weight:700;color:${fNowC};background:${fCalHdr};padding:1px 5px;border-radius:3px;border:1px solid ${fNowC};white-space:nowrap;z-index:5;">▼ Auj.</div>`;
 
     const calGridH = validCal.length * CAL_H;
     let calRows = '';
@@ -974,46 +1543,43 @@ function renderFrise() {
       const s=getStatusCal(e);
       const stT=s?({ok:'OK',soon:'BIENTÔT',due:'DÉPASSÉ'}[s.type]):'—';
       const stC=s?({ok:'#34D399',soon:'#F97316',due:'#EF4444'}[s.type]):'#4A6080';
-      const BT=16,BH=CAL_H-32; let bar='';
+      const BH=20,BT=(CAL_H-BH)/2; let bar='';
       if(e.dateEcheance){
         const dS=new Date(e.dateEcheance),tol=parseInt(e.toleranceDays)||0;
         const dE=new Date(dS); dE.setDate(dE.getDate()+tol);
         const x1=toD(dS.getTime()),x2=toD(dE.getTime());
         const fmtD=d=>(d>=0?'+':'')+d+'j';
         bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;top:${BT-6}px;width:3px;height:${BH+12}px;background:${ORANGE};border-radius:2px;z-index:3;box-shadow:0 0 8px ${ORANGE}88;"></div>`;
-        bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:${ORANGE};white-space:nowrap;z-index:4;">${dS.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
-        if(s) bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${ORANGE}BB;white-space:nowrap;z-index:4;">${fmtD(s.diffJ)}</div>`;
+        bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:${fFont};font-size:10px;font-weight:700;color:${ORANGE};white-space:nowrap;z-index:4;">${dS.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
+        if(s) bar+=`<div style="position:absolute;left:${x1.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:${fFont};font-size:9px;color:${ORANGE}BB;white-space:nowrap;z-index:4;">${fmtD(s.diffJ)}</div>`;
         if(tol>0){
           bar+=`<div style="position:absolute;left:${(x1+3).toFixed(1)}px;top:${BT}px;width:${Math.max(x2-x1-3,2).toFixed(1)}px;height:${BH}px;background:repeating-linear-gradient(-45deg,${ORANGE}28 0,${ORANGE}28 4px,${ORANGE}0c 4px,${ORANGE}0c 10px);border-top:1px solid ${ORANGE}55;border-bottom:1px solid ${ORANGE}55;border-right:2px dashed ${ORANGE}70;z-index:1;"></div>`;
           bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;top:${BT-4}px;width:2px;height:${BH+8}px;background:${ORANGE}88;z-index:3;"></div>`;
-          bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:10px;color:${ORANGE}CC;white-space:nowrap;z-index:4;">${dE.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
-          if(s) bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:'Barlow Condensed',sans-serif;font-size:9px;color:${ORANGE}BB;white-space:nowrap;z-index:4;">${fmtD(s.diffJTol)}</div>`;
+          bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;top:2px;transform:translateX(-50%);font-family:${fFont};font-size:10px;color:${ORANGE}CC;white-space:nowrap;z-index:4;">${dE.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}</div>`;
+          if(s) bar+=`<div style="position:absolute;left:${x2.toFixed(1)}px;bottom:2px;transform:translateX(-50%);font-family:${fFont};font-size:9px;color:${ORANGE}BB;white-space:nowrap;z-index:4;">${fmtD(s.diffJTol)}</div>`;
         }
       }
       calRows+=`<div style="display:flex;height:${CAL_H}px;">
-        <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:10;background:#0D1F45;border-right:2px solid rgba(249,115,22,.35);border-bottom:1px solid rgba(249,115,22,.2);display:flex;flex-direction:column;justify-content:center;padding:0 12px 0 14px;gap:3px;">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:${c};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(e.nom)}</div>
-          <div style="font-size:10px;font-weight:700;color:${stC};">${stT}</div>
-        </div>
+        ${labelCell(e, c, `<div style="font-size:10px;font-weight:700;color:${stC};">${stT}</div>`, 'rgba(249,115,22,.35)', 'rgba(249,115,22,.2)')}
         <div style="position:relative;height:${CAL_H}px;flex:1;border-bottom:1px solid rgba(249,115,22,.2);overflow-x:clip;overflow-y:visible;">${bar}</div>
       </div>`;
     });
 
     calHTML = `
-      <div class="board-cal" style="margin-top:12px;overflow-x:auto;border-radius:10px;border:1px solid rgba(249,115,22,.4);box-shadow:0 4px 16px rgba(0,0,0,.35);">
-        <div style="position:relative;width:${LEFT_W + cW}px;">
-          <div style="display:flex;position:sticky;top:0;z-index:8;background:#1a120a;border-bottom:2px solid rgba(249,115,22,.5);height:${CAL_HDR}px;">
-            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;z-index:9;background:#1a120a;border-right:2px solid rgba(249,115,22,.4);display:flex;align-items:center;padding:0 10px;gap:6px;">
-              <span style="font-size:13px;">📅</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#F97316AA;letter-spacing:.1em;text-transform:uppercase;">CALENDAIRE</span>
+      <div class="board-cal" style="--lw:${LEFT_W}px;margin-top:12px;overflow-x:auto;border-radius:10px;border:1px solid rgba(249,115,22,.4);box-shadow:0 4px 16px rgba(0,0,0,.25);">
+        <div style="position:relative;width:calc(${LW} + ${cW}px);">
+          <div style="display:flex;position:sticky;top:0;z-index:8;background:${fCalHdr};border-bottom:2px solid rgba(249,115,22,.5);height:${CAL_HDR}px;">
+            <div style="width:${LW};flex-shrink:0;position:sticky;left:0;z-index:9;background:${fCalHdr};border-right:2px solid rgba(249,115,22,.4);display:flex;align-items:center;padding:0 10px;gap:6px;">
+              <span style="font-size:13px;">📅</span><span style="font-family:${fFont};font-size:11px;font-weight:700;color:#F97316AA;letter-spacing:.1em;text-transform:uppercase;">CALENDAIRE</span>${GRIP}
             </div>
             <div style="flex:1;position:relative;overflow:visible;">${calTicks}${todayLbl}</div>
           </div>
           <div style="position:relative;${gridBgCal}">
-            <div style="position:absolute;left:${(LEFT_W+xTod).toFixed(1)}px;top:0;width:2px;height:100%;background:linear-gradient(to bottom,#3B82F6,#3B82F666);z-index:2;pointer-events:none;"></div>
+            <div style="position:absolute;left:calc(${LW} + ${xTod.toFixed(1)}px);top:0;width:2px;height:100%;background:linear-gradient(to bottom,${fNowC},${fNowC}66);z-index:2;pointer-events:none;"></div>
             ${calRows}
           </div>
-          <div style="display:flex;border-top:2px solid rgba(249,115,22,.3);height:${CAL_FTR}px;background:#150d05;">
-            <div style="width:${LEFT_W}px;flex-shrink:0;position:sticky;left:0;background:#150d05;border-right:2px solid rgba(249,115,22,.3);z-index:3;"></div>
+          <div style="display:flex;border-top:2px solid rgba(249,115,22,.3);height:${CAL_FTR}px;background:${fCalFtr};">
+            <div style="width:${LW};flex-shrink:0;position:sticky;left:0;background:${fCalFtr};border-right:2px solid rgba(249,115,22,.3);z-index:3;"></div>
             <div style="flex:1;position:relative;overflow:visible;">${calTicks}</div>
           </div>
         </div>
@@ -1031,7 +1597,11 @@ function escHtml(s) {
 function switchTab(i) {
   document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
   document.querySelectorAll('.pane').forEach((p, idx) => p.classList.toggle('active', idx === i));
-  if (i === 1) renderFrise();
+  // Remove 700 px cap when on frise tab (tab index 1), restore it on all others
+  document.querySelector('.content').classList.toggle('frise-mode', i === 1);
+  // Defer frise render to next frame so the browser has computed the pane's layout
+  // (clientWidth is 0 while pane has display:none)
+  if (i === 1) requestAnimationFrame(() => renderFrise());
 }
 
 // ===================== RENDER ALL =====================
@@ -1039,6 +1609,166 @@ function renderAll() {
   renderCougarSelect();
   renderEntretiens();
   renderFrise();
+}
+
+// ===================== EXPORT HTML =====================
+// Enregistre les entretiens de l'appareil actif dans un fichier HTML autonome (lisible, imprimable).
+function exportEntretiensHTML() {
+  const ac = getActive();
+  if (!ac) { alert('Aucun appareil sélectionné.'); return; }
+  const list = ac.entretiens || [];
+  if (list.length === 0) { alert('Aucun entretien à exporter pour ce Cougar.'); return; }
+
+  const hNow   = parseFloat(ac.hCellule) || 0;
+  const pad    = n => String(n).padStart(2, '0');
+  const frDate = iso => iso ? String(iso).split('-').reverse().join('/') : '';
+  const sg     = n => (n >= 0 ? '+' : '') + n;
+  const dash   = '—';
+  const fh     = d => { const r = Math.round(d * 10) / 10; return (r >= 0 ? '+' : '') + r.toFixed(1) + ' h'; };
+
+  // ── Une ligne par entretien : valeurs + statut (mêmes règles que l'écran) ──
+  const rows = list.map(e => {
+    const isCal = e.type === 'cal', isDual = e.type === 'dual';
+    const hVal  = parseFloat(e.hCellule);
+    const hasH  = !isCal && !isNaN(hVal);
+    const hasD  = (isCal || isDual) && !!e.dateEcheance;
+    const sH    = hasH ? getStatus({ hCellule: e.hCellule, tolerance: e.tolerance }, hNow) : null;
+    const sD    = hasD ? getStatusCal(e) : null;
+    const tolH  = parseFloat(e.tolerance) || 0;
+    const tolD  = parseInt(e.toleranceDays) || 0;
+
+    const ech = [], tol = [], reste = [];
+    if (hasH) {
+      ech.push(hVal.toFixed(1) + ' h');
+      tol.push(tolH ? '+' + tolH + ' h' : dash);
+      reste.push(sH ? fh(sH.delta) : dash);
+    }
+    if (hasD) {
+      ech.push((isDual ? 'ou ' : '') + frDate(e.dateEcheance));
+      tol.push(tolD ? '+' + tolD + ' j' : dash);
+      reste.push(sD ? sg(sD.diffJ) + ' j' : dash);
+    }
+
+    const st = isDual ? getStatusDual(e, hNow) : isCal ? getStatusCal(e) : getStatus(e, hNow);
+    let stType = 'na', stLbl = dash;
+    if (st) {
+      stType = st.type;
+      const byDate = isCal || (isDual && st.criterion === 'date');
+      stLbl = { ok: 'OK', due: 'Dépassé', soon: byDate ? 'Bientôt' : 'Tolérance' }[st.type];
+    }
+    return {
+      typeCls: isDual ? 'dual' : isCal ? 'cal' : 'meca',
+      typeLbl: isDual ? 'Méca + Cal' : isCal ? 'Cal' : 'Méca',
+      nom: e.nom || '', desig: e.desig || '',
+      ech: ech.length ? ech : [dash], tol: tol.length ? tol : [dash], reste: reste.length ? reste : [dash],
+      stType, stLbl, tw: (e.tw || '').trim(), rem: (e.remarques || '').trim(),
+    };
+  });
+
+  const count  = t => rows.filter(r => r.stType === t).length;
+  const hasTW  = rows.some(r => r.tw);
+  const hasRem = rows.some(r => r.rem);
+  const e_     = escHtml;
+  const cell   = arr => arr.map(e_).join('<br>');
+
+  const now       = new Date();
+  const stamp     = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} à ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const fileDate  = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const verEl     = document.querySelector('.version-badge');
+  const ver       = verEl ? verEl.textContent.trim() : '';
+  const snSafe    = String(ac.sn).replace(/[^\w.-]+/g, '_');
+
+  const body = rows.map((r, i) => `
+      <tr>
+        <td class="num">${i + 1}</td>
+        <td><span class="typ ${r.typeCls}">${e_(r.typeLbl)}</span></td>
+        <td class="op">${e_(r.nom)}</td>
+        <td class="ens">${e_(r.desig) || dash}</td>
+        <td class="num">${cell(r.ech)}</td>
+        <td class="num">${cell(r.tol)}</td>
+        <td class="num">${cell(r.reste)}</td>
+        <td><span class="st ${r.stType}">${e_(r.stLbl)}</span></td>${hasTW ? `
+        <td class="num">${e_(r.tw) || dash}</td>` : ''}${hasRem ? `
+        <td class="rem">${e_(r.rem)}</td>` : ''}
+      </tr>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cougar ${e_(ac.sn)} — Entretiens</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; background: #F5F6FA; color: #1A2340; font-size: 13px; line-height: 1.4;
+         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  h1 { margin: 0 0 2px; font-size: 22px; letter-spacing: .02em; }
+  .sub { margin-bottom: 14px; color: #4B5672; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+  .chip { padding: 4px 12px; border: 1px solid #D4D9EE; border-radius: 999px; background: #fff; font-size: 12px; font-weight: 700; }
+  .chip.due  { color: #B91C1C; border-color: #FCA5A5; background: #FEF2F2; }
+  .chip.soon { color: #B45309; border-color: #FCD34D; background: #FFFBEB; }
+  .chip.ok   { color: #15803D; border-color: #86EFAC; background: #F0FDF4; }
+  .scroll { overflow-x: auto; border: 1px solid #D4D9EE; border-radius: 8px; background: #fff; }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 8px 10px; background: #ECEEF6; border-bottom: 2px solid #D4D9EE; color: #4B5672; text-align: left;
+       font-size: 11px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid #E6E9F4; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .op  { font-weight: 700; }
+  .ens { color: #4B5672; }
+  .rem { color: #4B5672; font-size: 12px; }
+  .num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .typ { display: inline-block; padding: 2px 6px; border: 1px solid; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .06em; white-space: nowrap; }
+  .typ.meca { color: #1D4ED8; border-color: #93C5FD; background: #EFF6FF; }
+  .typ.cal  { color: #6D28D9; border-color: #C4B5FD; background: #F5F3FF; }
+  .typ.dual { color: #fff; border-color: #7C3AED; background: #7C3AED; }
+  .st { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+  .st.ok   { background: #DCFCE7; color: #166534; }
+  .st.soon { background: #FEF3C7; color: #92400E; }
+  .st.due  { background: #FEE2E2; color: #991B1B; }
+  .st.na   { background: #E5E7EB; color: #4B5563; }
+  .foot { margin-top: 12px; color: #8892A8; font-size: 11px; }
+  @page { size: A4 landscape; margin: 10mm; }
+  @media print {
+    body { padding: 0; background: #fff; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .scroll { overflow: visible; }
+    thead { display: table-header-group; }
+    tr { break-inside: avoid; }
+  }
+</style>
+</head><body>
+<div class="wrap">
+  <h1>Cougar n°${e_(ac.sn)} — Suivi des entretiens</h1>
+  <div class="sub">H cellule : <b>${hNow.toFixed(1)} h</b> &nbsp;·&nbsp; ${rows.length} entretien${rows.length > 1 ? 's' : ''} &nbsp;·&nbsp; Exporté le ${stamp}</div>
+  <div class="chips">
+    <span class="chip due">Dépassés : ${count('due')}</span>
+    <span class="chip soon">Tolérance / bientôt : ${count('soon')}</span>
+    <span class="chip ok">OK : ${count('ok')}</span>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Type</th><th>Opération</th><th>Ensemble</th><th>Échéance</th><th>Tolérance</th><th>Reste</th><th>Statut</th>${hasTW ? '<th>Indispo TW</th>' : ''}${hasRem ? '<th>Remarques</th>' : ''}
+      </tr></thead>
+      <tbody>${body}
+      </tbody>
+    </table>
+  </div>
+  <div class="foot">COUGAR – SUIVI ENTRETIENS ${e_(ver)} · statuts calculés au moment de l'export (H cellule ${hNow.toFixed(1)} h, ${frDate(fileDate)}).</div>
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `Cougar_${snSafe}_entretiens_${fileDate}.html`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
 }
 
 // ===================== IMPRESSION =====================
@@ -1098,7 +1828,10 @@ function printFrise() {
   // Supprimer les scrolls (tout doit être visible pour l'impression)
   b = b.split('overflow-x:auto').join('overflow:visible');
   b = b.split('overflow-x:clip').join('overflow:visible');
+  // les noms de la colonne de gauche restent tronqués à la largeur choisie (sinon ils débordent sur la frise)
+  b = b.split('overflow:hidden;text-overflow:ellipsis').join('overflow:@@keep@@;text-overflow:ellipsis');
   b = b.split('overflow:hidden').join('overflow:visible');
+  b = b.split('overflow:@@keep@@').join('overflow:hidden');
 
   const header = ac.sn + ' &nbsp;·&nbsp; H Cellule : ' + (parseFloat(ac.hCellule)||0).toFixed(1) + 'h &nbsp;·&nbsp; Édité le ' +
     new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -1117,20 +1850,31 @@ function printFrise() {
 <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="shortcut icon" href="icon.ico">
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   @page { size: A4 landscape; margin: 8mm; }
   * { box-sizing:border-box; -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
-  body { margin:0; padding:0; background:#fff; font-family:'Barlow',sans-serif; overflow:hidden; }
+  body { margin:0; padding:0; background:#fff; font-family:'Plus Jakarta Sans',sans-serif; overflow:hidden; }
   .ph {
     font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700;
     color:#1a3a6a; letter-spacing:.1em; text-transform:uppercase;
     border-bottom:2px solid #c2cfe0; padding-bottom:4px; margin-bottom:6px;
+    display:flex; align-items:center; justify-content:space-between;
   }
+  .btn-back {
+    font-family:'Barlow',sans-serif; font-size:13px; font-weight:700;
+    background:#0F2248; color:#F0C040; border:1.5px solid #F0C040;
+    border-radius:6px; padding:5px 14px; cursor:pointer; flex-shrink:0;
+  }
+  @media print { .btn-back { display:none !important; } }
+  .lw-grip { display:none !important; }
   .fw { transform-origin:top left; transform:scale(${scale.toFixed(5)}); width:${totalW}px; }
 </style></head>
 <body>
-  <div class="ph">🚁 &nbsp; COUGAR &nbsp;|&nbsp; ${header}</div>
+  <div class="ph">
+    <span>🚁 &nbsp; COUGAR &nbsp;|&nbsp; ${header}</span>
+    <button class="btn-back" onclick="window.close()">✕ Fermer</button>
+  </div>
   <div class="fw">${b}</div>
 </body></html>`;
 
@@ -1143,11 +1887,589 @@ function printFrise() {
   win.addEventListener('load', () => setTimeout(() => { win.focus(); win.print(); }, 600));
 }
 
+// ===================== PDF IMPORT =====================
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+let _importParsed = null;
+
+function openImportPDF() {
+  _importParsed = null;
+  ['importStep1','importDetect','importNextBtn'].forEach(id => {
+    document.getElementById(id).style.display = id === 'importStep1' ? '' : 'none';
+  });
+  document.getElementById('importStep2').style.display = 'none';
+  document.getElementById('importConfirmBtn').style.display = 'none';
+  document.getElementById('importParseError').style.display = 'none';
+  document.getElementById('importSpinner').style.display = 'none';
+  document.getElementById('pdfFileInput').value = '';
+  document.getElementById('istep1').classList.add('active');
+  document.getElementById('istep2').classList.remove('active');
+  document.getElementById('modalImport').classList.add('open');
+}
+
+function onPDFDrop(ev) {
+  ev.preventDefault();
+  const f = ev.dataTransfer.files[0];
+  if (f) onPDFSelected(f);
+}
+
+async function onPDFSelected(file) {
+  if (!file) return;
+  document.getElementById('importParseError').style.display = 'none';
+  document.getElementById('importDetect').style.display = 'none';
+  document.getElementById('importNextBtn').style.display = 'none';
+  document.getElementById('importSpinner').style.display = '';
+  try {
+    const ab  = await file.arrayBuffer();
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (['xlsx', 'xlsm', 'xls'].includes(ext)) {
+      _importParsed = _parseExcelAnnexeIV(ab, file.name);
+    } else {
+      if (!window.pdfjsLib) throw new Error('PDF.js non disponible — vérifiez votre connexion.');
+      _importParsed = await _parsePDFAnnexeIV(ab);
+    }
+    document.getElementById('detectMachine').textContent =
+      'AS 332 M1 n°' + (_importParsed.sn || '?');
+    document.getElementById('detectHCell').textContent =
+      (_importParsed.hCellule || '?') + ' h';
+    document.getElementById('importSpinner').style.display = 'none';
+    document.getElementById('importDetect').style.display = '';
+    // Set default date max = today + 6 months
+    const defDate = new Date(); defDate.setMonth(defDate.getMonth() + 6);
+    document.getElementById('importDateMax').value = defDate.toISOString().slice(0, 10);
+    if (_importParsed.entries.length > 0) {
+      document.getElementById('importNextBtn').style.display = '';
+    } else {
+      _showImportError('Aucun entretien détecté dans ce fichier.');
+    }
+  } catch(err) {
+    document.getElementById('importSpinner').style.display = 'none';
+    _showImportError('Erreur de lecture : ' + err.message);
+  }
+}
+
+function _showImportError(msg) {
+  const el = document.getElementById('importParseError');
+  el.textContent = msg;
+  el.style.display = '';
+}
+
+function importGoToStep2() {
+  if (!_importParsed) return;
+  const horizon = parseFloat(document.getElementById('importHorizon').value) || 100;
+  const hC = parseFloat(_importParsed.hCellule) || 0;
+  const maxH = hC + horizon;
+
+  // Filter: meca by hour horizon, cal by date max, dual by BOTH
+  const dateMaxStr = document.getElementById('importDateMax').value; // YYYY-MM-DD
+  const dateMaxMs  = dateMaxStr ? new Date(dateMaxStr).getTime() : Infinity;
+  const filtered = _importParsed.entries.filter(e => {
+    const dMs = e.dateEcheance ? new Date(e.dateEcheance).getTime() : null;
+    if (e.type === 'cal') {
+      return !!dMs && dMs <= dateMaxMs;
+    }
+    const h = parseFloat(e.hCellule);
+    const inHrs = !isNaN(h) && h <= maxH;
+    if (e.type === 'dual') {
+      // Dual: hours must be in range AND date (if set) must also be within visibility
+      const inDate = !dMs || dMs <= dateMaxMs;
+      return inHrs && inDate;
+    }
+    return inHrs; // meca
+  });
+
+  // Match cougar by SN
+  if (_importParsed.sn) {
+    const match = state.cougars.find(c => c.sn === _importParsed.sn);
+    if (match) { state.activeSN = match.sn; saveState(); renderAll(); }
+  }
+
+  _importParsed._filtered = filtered.map(e => ({ ...e, _sel: true }));
+  _renderImportTable(_importParsed._filtered, hC, maxH);
+
+  document.getElementById('importStep1').style.display = 'none';
+  document.getElementById('importStep2').style.display = '';
+  document.getElementById('importNextBtn').style.display = 'none';
+  document.getElementById('importConfirmBtn').style.display = '';
+  document.getElementById('istep1').classList.remove('active');
+  document.getElementById('istep2').classList.add('active');
+
+  const ac = getActive();
+  const n = filtered.length;
+  document.getElementById('importStep2Title').textContent =
+    `${n} entretien${n > 1 ? 's' : ''} · Cougar ${ac ? ac.sn : '?'} · jusqu'à ${maxH.toFixed(0)}h`;
+}
+
+function _renderImportTable(entries, hC, maxH) {
+  const container = document.getElementById('importTableContainer');
+  if (!entries.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px;">Aucun entretien dans cette fenêtre.</div>';
+    return;
+  }
+  container.innerHTML = `
+  <div class="import-table-wrap">
+    <table class="import-table">
+      <thead><tr>
+        <th style="width:28px;text-align:center;">☑</th>
+        <th style="min-width:160px;">Nom</th>
+        <th>Échéance</th>
+        <th>Tol.</th>
+        <th style="width:60px;">Type</th>
+        <th style="min-width:120px;">Remarques</th>
+        <th style="width:80px;" title="Temps d'indisponibilité (facultatif)">TW</th>
+      </tr></thead>
+      <tbody>
+        ${entries.map((e, i) => {
+          const isDual = e.type === 'dual';
+          const isCal  = e.type === 'cal';
+          const echStr = isDual
+            ? `${e.hCellule}h<br><small style="color:var(--text-dim)">${e.dateEcheance||'—'}</small>`
+            : isCal ? (e.dateEcheance || '—') : `${e.hCellule}h`;
+          const tolStr = isDual
+            ? `${e.tolerance||0}h / ${e.toleranceDays||0}j`
+            : isCal ? `${e.toleranceDays||0}j` : `${e.tolerance||0}h`;
+          const typeBadge = isDual
+            ? '<span class="import-type-badge" style="background:#4C1D95;color:#C4B5FD;">⚡ DUAL</span>'
+            : isCal
+              ? '<span class="import-type-badge" style="background:var(--card2);color:#F97316;">📅 CAL</span>'
+              : '<span class="import-type-badge" style="background:var(--card2);color:var(--blue-light);">⚙ MÉCA</span>';
+          return `<tr>
+            <td style="text-align:center;">
+              <input type="checkbox" checked
+                onchange="_importParsed._filtered[${i}]._sel=this.checked">
+            </td>
+            <td><input class="import-cell-input" value="${escHtml(e.nom)}"
+              oninput="_importParsed._filtered[${i}].nom=this.value"></td>
+            <td><input class="import-cell-input" value="${escHtml(e.desig||'')}" placeholder="—"
+              style="font-style:italic;color:var(--text-dim);"
+              oninput="_importParsed._filtered[${i}].desig=this.value"></td>
+            <td class="import-ech">${echStr}</td>
+            <td class="import-tol">${tolStr}</td>
+            <td>${typeBadge}</td>
+            <td><input class="import-cell-input" value="${escHtml(e.remarques||'')}" placeholder="—"
+              oninput="_importParsed._filtered[${i}].remarques=this.value"></td>
+            <td><input class="import-cell-input" value="${escHtml(e.tw||'')}" placeholder="—"
+              style="width:70px;" title="ex: 2h30, 45min"
+              oninput="_importParsed._filtered[${i}].tw=this.value"></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function confirmImport() {
+  const ac = getActive();
+  if (!ac) { alert('Aucun appareil actif.'); return; }
+  if (!_importParsed || !_importParsed._filtered) return;
+  const selected = _importParsed._filtered.filter(e => e._sel);
+  if (!selected.length) { closeModal('modalImport'); return; }
+  // Update H cellule to PDF value
+  if (_importParsed.hCellule) ac.hCellule = _importParsed.hCellule;
+
+  let added = 0, updated = 0;
+  selected.forEach(e => {
+    // Smart merge: find existing entry by opération + désignation (+ FME + Numéro) — update, don't duplicate.
+    // Entries created before V2.11 have no FME/Numéro: they still match on opération + désignation.
+    const sameName = x => x.nom === e.nom && (x.desig||'') === (e.desig||'');
+    const existing = ac.entretiens.find(x => sameName(x) && (x.fme||'') === (e.fme||'') && (x.num||'') === (e.num||''))
+                  || ac.entretiens.find(x => sameName(x) && !x.fme && !x.num);
+    if (existing) {
+      if (e.fme) existing.fme = e.fme;
+      if (e.num) existing.num = e.num;
+      // Update echeance and tolerance fields from new PDF data
+      if (e.type === 'meca' || e.type === 'dual') {
+        existing.hCellule  = e.hCellule  || '';
+        existing.tolerance = e.tolerance || '0';
+      }
+      if (e.type === 'cal' || e.type === 'dual') {
+        existing.dateEcheance  = e.dateEcheance  || '';
+        existing.toleranceDays = e.toleranceDays || '0';
+      }
+      if (e.remarques) existing.remarques = e.remarques;
+      if (e.tw) existing.tw = e.tw; // preserve TW if set in import
+      updated++;
+    } else {
+      // New entry — add it
+      const ent = { id: Date.now() + Math.floor(Math.random() * 10000), type: e.type, nom: e.nom, desig: e.desig||'', fme: e.fme||'', num: e.num||'' };
+      if (e.type === 'meca' || e.type === 'dual') {
+        ent.hCellule  = e.hCellule  || '';
+        ent.tolerance = e.tolerance || '0';
+      }
+      if (e.type === 'cal' || e.type === 'dual') {
+        ent.dateEcheance  = e.dateEcheance  || '';
+        ent.toleranceDays = e.toleranceDays || '0';
+      }
+      if (e.remarques) ent.remarques = e.remarques;
+      if (e.tw) ent.tw = e.tw;
+      ac.entretiens.push(ent);
+      added++;
+    }
+  });
+  saveState();
+  closeModal('modalImport');
+  renderAll();
+  const parts = [added > 0 && `${added} ajouté${added>1?'s':''}`, updated > 0 && `${updated} mis à jour`].filter(Boolean);
+  setTimeout(() => alert(`✅ Import Cougar ${ac.sn} : ${parts.join(', ') || '0 entretien'}.`), 150);
+}
+
+// ── Entrée d'entretien à partir d'une ligne d'Annexe IV (PDF ou Excel) ──
+// Même logique pour les deux imports.
+//   hrsVal  : échéance en heures (NaN si absente)     dateISO : échéance en date 'YYYY-MM-DD' (ou null)
+//   attVal  : échéance en atterrissages (NaN si absente — non suivie par l'appli, gardée en remarque)
+//   margVal : marge (texte)                           margUnit : 'H' | 'J' | 'ATT' | 'CY' | 'T'
+//   obs     : observations — « Ou le JJ/MM/AAAA » et « Ou à N Hc » donnent la 2e échéance (type dual)
+function _buildEntry(o) {
+  const { nom, desig, fme, num, hrsVal, attVal, dateISO, margVal, margUnit } = o;
+  const obs = String(o.obs || '').replace(/\s+/g, ' ').trim();
+
+  const ouLeM   = obs.match(/Ou\s*le\s*(\d{2})\/(\d{2})\/(\d{4})/i);
+  const ouAM    = obs.match(/Ou\s*[àa]\s*([\d.,]+)\s*Hc?/i);
+  const obsDate = ouLeM ? `${ouLeM[3]}-${ouLeM[2]}-${ouLeM[1]}` : null;
+  const obsHrs  = ouAM ? parseFloat(ouAM[1].replace(',', '.')) : NaN;
+  const hasH = !isNaN(hrsVal);
+  const hasD = !!dateISO;
+
+  const tolH = margUnit === 'H' ? margVal : '0';
+  const tolD = margUnit === 'J' ? margVal : '0';
+
+  // Ce que l'appli ne suit pas (atterrissages, marge en ATT / CY / trimestres) reste lisible en remarque
+  const notes = [];
+  if (!isNaN(attVal)) notes.push(`Éch. ${attVal} att`);
+  if (margUnit !== 'H' && margUnit !== 'J' && margVal && margVal !== '0') notes.push(`marge ${margVal} ${margUnit}`);
+  const withNotes = rem => [rem, notes.join(', ')].filter(Boolean).join(' — ');
+  const strip     = t => t.replace(/^\s*[-–,;/]\s*/, '').trim();
+  const without   = (...ms) => strip(ms.reduce((t, m) => t.replace(m[0], ''), obs));
+
+  const base = { nom, desig: desig || '', fme: fme || '', num: num || '' };
+
+  if (hasH && obsDate) {            // heures + date en observation
+    return { type: 'dual', ...base, hCellule: String(hrsVal), tolerance: tolH,
+      dateEcheance: obsDate, toleranceDays: tolD, remarques: withNotes(without(ouLeM)) };
+  }
+  if (hasD && !isNaN(obsHrs)) {     // date + heures en observation
+    return { type: 'dual', ...base, hCellule: String(obsHrs), tolerance: tolH,
+      dateEcheance: dateISO, toleranceDays: tolD, remarques: withNotes(without(ouAM)) };
+  }
+  if (hasH) return { type: 'meca', ...base, hCellule: String(hrsVal), tolerance: tolH, remarques: withNotes(obs) };
+  if (hasD) return { type: 'cal',  ...base, dateEcheance: dateISO, toleranceDays: tolD, remarques: withNotes(obs) };
+
+  // Pas d'échéance heures/date propre (ex. échéance en atterrissages ou cycles) :
+  // on reprend la date / les heures de repli des observations quand elles existent.
+  if (obsDate && !isNaN(obsHrs)) {
+    return { type: 'dual', ...base, hCellule: String(obsHrs), tolerance: tolH,
+      dateEcheance: obsDate, toleranceDays: tolD, remarques: withNotes(without(ouLeM, ouAM)) };
+  }
+  if (obsDate) return { type: 'cal',  ...base, dateEcheance: obsDate, toleranceDays: tolD, remarques: withNotes(without(ouLeM)) };
+  if (!isNaN(obsHrs)) return { type: 'meca', ...base, hCellule: String(obsHrs), tolerance: tolH, remarques: withNotes(without(ouAM)) };
+  return null;                      // échéance en cycles seule, ou sans échéance : non suivi
+}
+
+// La même tâche peut apparaître plusieurs fois (une ligne en heures + une en date, ou reprise sur
+// plusieurs pages) : on garde la première. FME + Numéro font partie de la clé pour ne pas fusionner
+// deux composants différents qui portent la même opération et la même désignation.
+function _dedupEntries(entries) {
+  const seen = new Set();
+  return entries.filter(e => {
+    const key = [e.fme, e.num, e.nom, e.desig].join('|');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// ── Parser Excel (.xlsx / .xlsm / .xls) ──────────────────────────────
+// Même mise en page que le PDF : A=FME · B=Désignation · C=Numéro · D(:F)=Opérations · G=Référence ·
+// H=Heures · I=Att. · J=Date · K=Cycles · L/M=Marge (valeur / unité) · N=Observations.
+// Les colonnes sont retrouvées par leurs titres (ligne « Désignation »), avec repli sur ces positions.
+function _parseExcelAnnexeIV(arrayBuffer, fileName) {
+  if (!window.XLSX) throw new Error('SheetJS non disponible — vérifiez votre connexion.');
+  const wb = XLSX.read(arrayBuffer, { type: 'array' });   // dates = numéros de série Excel
+  const norm  = v => String(v == null ? '' : v).normalize('NFD').replace(/[̀-ͯ]/g, '')
+                      .replace(/\s+/g, ' ').trim().toLowerCase();
+  const clean = v => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+
+  // Feuille Annexe IV : la première qui porte les titres « Désignation » et « Opérations »
+  let ws = null, R = null, hdrRow = -1;
+  for (const name of wb.SheetNames) {
+    const sh = wb.Sheets[name];
+    if (!sh || !sh['!ref']) continue;
+    const rg = XLSX.utils.decode_range(sh['!ref']);
+    for (let r = rg.s.r; r <= Math.min(rg.e.r, rg.s.r + 40) && !ws; r++) {
+      let hasD = false, hasO = false;
+      for (let c = rg.s.c; c <= Math.min(rg.e.c, rg.s.c + 20); c++) {
+        const cell = sh[XLSX.utils.encode_cell({ r, c })];
+        const t = cell ? norm(cell.v) : '';
+        if (t === 'designation') hasD = true;
+        if (t === 'operations')  hasO = true;
+      }
+      if (hasD && hasO) { ws = sh; R = rg; hdrRow = r; }
+    }
+    if (ws) break;
+  }
+  if (!ws) throw new Error('Feuille Annexe IV introuvable (titres « Désignation » / « Opérations » absents).');
+
+  const val = (r, c) => { const cell = ws[XLSX.utils.encode_cell({ r, c })]; return cell ? cell.v : null; };
+
+  // Colonnes
+  const dflt   = { fme: 0, desig: 1, num: 2, ops: 3, ref: 6, hrs: 7, att: 8, date: 9, cyc: 10, marg: 11, obs: 13 };
+  const labels = { fme: ['fme'], desig: ['designation'], num: ['numero'], ops: ['operations'], ref: ['reference'],
+                   hrs: ['heures'], att: ['att.', 'att'], date: ['date'], cyc: ['cycles'] };
+  const col = {};
+  for (let c = R.s.c; c <= R.e.c; c++) {
+    const t = norm(val(hdrRow, c));
+    for (const k in labels) if (col[k] === undefined && labels[k].includes(t)) col[k] = c;
+  }
+  // « Marges » / « Observations » : ligne de titres de groupe, juste au-dessus des titres de colonnes.
+  // Pas plus haut : les colonnes cachées de calcul portent aussi un « marges » (T11) qui fausserait tout.
+  for (let r = Math.max(R.s.r, hdrRow - 1); r <= hdrRow; r++) {
+    for (let c = R.s.c; c <= R.e.c; c++) {
+      const t = norm(val(r, c));
+      if (t === 'marges' && col.marg === undefined) col.marg = c;
+      if (t === 'observations' && col.obs === undefined) col.obs = c;
+    }
+  }
+  for (const k in dflt) if (col[k] === undefined) col[k] = R.s.c + dflt[k];
+
+  // N° de série (nombre de 3-5 chiffres en colonne B, sous « AS 332 M1 / FM CGK ») et H cellule
+  let sn = null, hCellule = null;
+  for (let r = R.s.r; r < hdrRow; r++) {
+    const b = val(r, R.s.c + 1);
+    if (sn === null && b !== null && /^\d{3,5}$/.test(String(b).trim())) sn = String(b).trim();
+    for (let c = R.s.c; c <= R.e.c; c++) {
+      if (hCellule === null && /^h\.?\s*cellule\s*:?$/.test(norm(val(r, c)))) {
+        for (let k = c + 1; k <= Math.min(R.e.c, c + 3); k++) {
+          const v = val(r, k);
+          if (typeof v === 'number') { hCellule = String(Math.round(v * 100) / 100); break; }
+        }
+      }
+    }
+  }
+  if (sn === null && fileName) {
+    const m = String(fileName).match(/(?:^|\D)(\d{4})(?:\D|$)/);
+    if (m) sn = m[1];
+  }
+
+  const toNum = v => (typeof v === 'number') ? v : parseFloat(String(v == null ? '' : v).replace(',', '.'));
+  const toISO = v => {
+    if (typeof v === 'number') {
+      const d = XLSX.SSF.parse_date_code(v);
+      return d ? `${String(d.y).padStart(4, '0')}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}` : null;
+    }
+    const m = String(v == null ? '' : v).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+  };
+
+  const entries = [];
+  for (let r = hdrRow + 1; r <= R.e.r; r++) {
+    const nom = clean(val(r, col.ops));
+    if (!nom || norm(nom) === 'operations') continue;
+    const mv = toNum(val(r, col.marg));
+    const entry = _buildEntry({
+      nom,
+      desig:   clean(val(r, col.desig)),
+      fme:     clean(val(r, col.fme)),
+      num:     clean(val(r, col.num)),
+      hrsVal:  toNum(val(r, col.hrs)),
+      attVal:  toNum(val(r, col.att)),
+      dateISO: toISO(val(r, col.date)),
+      margVal: isNaN(mv) ? '0' : String(mv),
+      margUnit: clean(val(r, col.marg + 1)).toUpperCase() || 'H',
+      obs:     clean(val(r, col.obs)),
+    });
+    if (entry) entries.push(entry);
+  }
+  return { sn, hCellule, entries: _dedupEntries(entries) };
+}
+
+// ── Parser PDF.js ────────────────────────────────────────────────────
+async function _parsePDFAnnexeIV(arrayBuffer) {
+  const pdfjsLib = window.pdfjsLib;
+  const pdf  = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const PH   = 595.2; // page height in pts
+
+  // Column x-ranges [xMin, xMax[ — on the START x of each text item.
+  // pdf.js returns one item per cell line, x = left edge of that text. Measured on the real
+  // Annexe IV (A4 landscape): FME codes start at x≈41-51 · Désignation always at x≈66.6 ·
+  // Numéro (centred cell) x≈186-212 · Opérations always x≈240.2 · Référence (centred) x≈415-434 ·
+  // Heures ≈494-497 · Att. ≈536 · Date ≈569 · Cycles ≈618 · Marge ≈649-653 (unit ≈669-674) ·
+  // Observations ≈687. Each boundary sits in the empty gap between two neighbouring clusters.
+  const C = {
+    FME:  [30,  58],
+    DESIG:[58,  180],
+    NUM:  [180, 235],
+    OPS:  [235, 400],
+    REF:  [400, 480],
+    HRS:  [480, 520],
+    ATT:  [520, 560],
+    DATE: [560, 600],
+    CYC:  [600, 640],
+    MARG: [640, 686],
+    OBS:  [686, 780],
+  };
+  const inC = (x, k) => x >= C[k][0] && x < C[k][1];
+
+  // ── Page 1: extract SN and H cellule from header ──
+  // PDF.js returns raw PDF text items — individual characters or small groups,
+  // NOT merged words. We collect all items then join tokens by region.
+  let sn = null, hCellule = null;
+  {
+    const p1 = await pdf.getPage(1);
+    const tc = await p1.getTextContent();
+    const p1items = [];
+    for (const it of tc.items) {
+      const x = it.transform[4], y = PH - it.transform[5], t = (it.str||'').trim();
+      if (t) p1items.push({ x, y, t });
+    }
+    // regionJoin: collect & sort all tokens in a bounding box, concat without spaces
+    const regionJoin = (xMin, xMax, yMin, yMax) =>
+      p1items
+        .filter(it => it.x >= xMin && it.x < xMax && it.y >= yMin && it.y <= yMax)
+        .sort((a, b) => a.x - b.x)
+        .map(it => it.t).join('');
+
+    // SN: 4-digit machine number — known region x=55-105, y=105-135
+    const snRaw = regionJoin(55, 105, 105, 135);
+    const snM   = snRaw.match(/\d{4}/);
+    if (snM) sn = snM[0];
+
+    // H cellule value — known region x=238-262, y=78-92
+    // "873.7" is stored as individual chars: "8","7","3",".","7"
+    const hcRaw = regionJoin(238, 262, 78, 92);
+    const hcM   = hcRaw.replace(',', '.').match(/\d{3,4}\.\d+/);
+    if (hcM) hCellule = hcM[0];
+  }
+
+  // ── All pages: collect text items ──
+  const allItems = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const tc   = await page.getTextContent();
+    for (const it of tc.items) {
+      const t = (it.str||'').trim();
+      if (!t) continue;
+      allItems.push({
+        x: it.transform[4],
+        y: PH - it.transform[5],  // top-origin
+        t,
+        p
+      });
+    }
+  }
+
+  // ── Group items into physical lines (same page, Y ±2pt) ──
+  allItems.sort((a, b) => a.p - b.p || a.y - b.y || a.x - b.x);
+  const lines = [];
+  for (const item of allItems) {
+    const ln = lines.find(r => r.p === item.p && Math.abs(r.y - item.y) <= 2);
+    if (ln) ln.items.push(item);
+    else lines.push({ y: item.y, p: item.p, items: [item] });
+  }
+
+  // ── Table body only: skip the form header block and the column-title line ──
+  const isColHdr  = r => r.items.some(i => i.t === 'FME' && inC(i.x, 'FME'));
+  const bodyLines = lines.filter(r => r.y >= 192 && !isColHdr(r));
+
+  // ── Rows: anchor on the "main" line of each table row ──
+  // Table cells are vertically centred. The main line of a row (the one carrying heures / att /
+  // date / cycles / marge) sits in the middle, and multi-line cells (Référence above all) have
+  // lines both ABOVE and BELOW it. So every other line belongs to the NEAREST main line on its
+  // page (within ROW_REACH pt) — not to the previous row, which is what mixed Référence text
+  // into the Opérations of the row above.
+  const ROW_REACH = 9;
+  const isMain = r => r.items.some(i =>
+    inC(i.x, 'HRS') || inC(i.x, 'ATT') || inC(i.x, 'DATE') || inC(i.x, 'CYC') || inC(i.x, 'MARG'));
+  const merged = [];
+  for (const p of [...new Set(bodyLines.map(r => r.p))]) {
+    const pl    = bodyLines.filter(r => r.p === p);
+    const mains = pl.filter(isMain).map(r => ({ y: r.y, items: [...r.items] }));
+    for (const r of pl) {
+      if (isMain(r)) continue;
+      if (r.items.every(i => /^Page\s+\d+/i.test(i.t))) continue;       // page footer
+      let best = null, bd = Infinity;
+      for (const m of mains) {
+        const d = Math.abs(m.y - r.y);
+        if (d < bd) { bd = d; best = m; }
+      }
+      if (best && bd <= ROW_REACH) best.items.push(...r.items);
+    }
+    merged.push(...mains);
+  }
+
+  // ── Parse each table row ──
+  const entries = [];
+  for (const row of merged) {
+    const cols = {};
+    for (const k of Object.keys(C)) cols[k] = [];
+    for (const it of row.items) {
+      for (const k of Object.keys(C)) {
+        if (inC(it.x, k)) { cols[k].push(it); break; }
+      }
+    }
+
+    // colText: text of a cell in reading order — lines top→bottom (Y ±2pt), each line left→right
+    const colText = (k) => {
+      const its = [...cols[k]].sort((a, b) => a.y - b.y || a.x - b.x);
+      const grouped = [];
+      let curY = null, cur = [];
+      for (const it of its) {
+        if (curY === null || Math.abs(it.y - curY) > 2) {
+          if (cur.length) grouped.push(cur);
+          cur = []; curY = it.y;
+        }
+        cur.push(it);
+      }
+      if (cur.length) grouped.push(cur);
+      return grouped.map(ln => {
+        ln.sort((a, b) => a.x - b.x);
+        let s = ln[0].t;
+        for (let j = 1; j < ln.length; j++) {
+          const gap = ln[j].x - (ln[j-1].x + ln[j-1].t.length * 3.5);
+          s += (gap > 5 ? ' ' : '') + ln[j].t;
+        }
+        return s;
+      }).join(' ').replace(/\s+/g, ' ').trim();
+    };
+    // colNum: single-line numeric cells (heures, att, date, marge) — pieces joined without spaces
+    const colNum = (k) => [...cols[k]].sort((a, b) => a.x - b.x).map(i => i.t).join('');
+
+    const nom = colText('OPS');          // Opérations only (Référence is its own column)
+    if (!nom) continue;
+    // Skip pure header strings
+    if (/^(ENSEMBLE|OPERATIONS|ECHEANCE|Marges|Observations|FME|LM)$/.test(nom)) continue;
+
+    const dateM   = colNum('DATE').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    const margM   = colNum('MARG').match(/(\d+(?:[.,]\d+)?)\s*(ATT|CY|H|J|T)/i);
+
+    const entry = _buildEntry({
+      nom,
+      desig:    colText('DESIG'),        // Désignation only (Numéro is its own column)
+      fme:      colText('FME'),
+      num:      colText('NUM'),
+      hrsVal:   parseFloat(colNum('HRS').replace(',', '.')),
+      attVal:   parseFloat(colNum('ATT').replace(',', '.')),
+      dateISO:  dateM ? `${dateM[3]}-${dateM[2]}-${dateM[1]}` : null,
+      margVal:  margM ? margM[1].replace(',', '.') : '0',
+      margUnit: margM ? margM[2].toUpperCase() : 'H',
+      obs:      colText('OBS'),
+    });
+    if (entry) entries.push(entry);
+  }
+
+  return { sn, hCellule, entries: _dedupEntries(entries) };
+}
+
 // ===================== INIT =====================
 loadState();
 
-// Demo data if empty
-if (state.cougars.length === 0) {
+// Demo data on the very first launch only — never again once a state has been saved
+// (otherwise deleting the last aircraft would bring the demo aircraft back on reload)
+let _hasSavedState = false;
+try { _hasSavedState = localStorage.getItem('cougar_maintenance_v3') !== null; } catch (e) {}
+if (state.cougars.length === 0 && !_hasSavedState) {
   state.cougars = [
     {
       sn: '2285',
@@ -1164,25 +2486,37 @@ if (state.cougars.length === 0) {
   saveState();
 }
 
+initThemeBtn();
 renderAll();
 
-// ── Service Worker (PWA offline) ──
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('SW enregistré'))
-      .catch(e => console.warn('SW erreur:', e));
-  });
-}
+// ── Redimensionnement : recalculer la frise quand la fenêtre change ──
+(function() {
+  const friseEl = document.getElementById('friseContainer');
+  if (friseEl && typeof ResizeObserver !== 'undefined') {
+    let _resizeTimer;
+    new ResizeObserver(() => {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => renderFrise(), 120);
+    }).observe(friseEl);
+  } else {
+    window.addEventListener('resize', () => renderFrise());
+  }
+})();
 
-
-// ── Service Worker (PWA offline) ──
+// ── Service Worker (PWA offline) — uniquement sur file:// ou HTTPS propre ──
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('SW enregistré'))
-      .catch(e => console.warn('SW erreur:', e));
-  });
+  const loc = window.location;
+  const swOk = loc.protocol === 'file:' ||
+               loc.hostname === 'localhost' ||
+               loc.hostname === '127.0.0.1' ||
+               loc.hostname.endsWith('.github.io');
+  if (swOk) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('SW enregistré'))
+        .catch(e => console.warn('SW erreur:', e));
+    });
+  }
 }
 
 </script>

@@ -1,10 +1,10 @@
-const CACHE = 'cougar-v1.0';
+const CACHE = 'cougar-app-1.1';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
-  'https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
 ];
 
 // Installation : mise en cache
